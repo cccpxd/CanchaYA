@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanchaYa - Reserva tu Cancha de Fútbol</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .booking-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 3rem;
+        }
+
+        .booking-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .canchas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .cancha-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .cancha-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .cancha-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .cancha-info {
+            padding: 1.5rem;
+        }
+
+        .cancha-info h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .cancha-info p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 1rem 0;
+        }
+
+        .features {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .feature-tag {
+            background: #f0f0f0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .reservations-list {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .reservation-item {
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .reservation-item h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .reservation-item p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">⚽ CanchaYa</div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#canchas">Canchas</a></li>
+                <li><a href="#reservar">Reservar</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero" id="inicio">
+        <h1>Reserva tu Cancha de Fútbol</h1>
+        <p>La forma más fácil y rápida de encontrar y reservar canchas cerca de ti</p>
+    </section>
+
+    <div class="container">
+        <section class="booking-section" id="reservar">
+            <h2 style="margin-bottom: 1.5rem; color: #333;">Hacer una Reserva</h2>
+            <form class="booking-form" id="bookingForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" required>
+                </div>
+                <div class="form-group">
+                    <label for="cancha">Selecciona una Cancha</label>
+                    <select id="cancha" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="futbol5">Cancha Fútbol 5</option>
+                        <option value="futbol7">Cancha Fútbol 7</option>
+                        <option value="futbol11">Cancha Fútbol 11</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora">Hora</label>
+                    <select id="hora" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="08:00">08:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                        <option value="20:00">08:00 PM</option>
+                    </select>
+                </div>
+            </form>
+            <button class="btn" onclick="hacerReserva()">Confirmar Reserva</button>
+        </section>
+
+        <section id="canchas">
+            <h2 style="color: white; text-align: center; margin-bottom: 2rem; font-size: 2rem;">Nuestras Canchas</h2>
+            <div class="canchas-grid">
+                <div class="cancha-card">
+                    <div class="cancha-image">⚽</div>
+                    <div class="cancha-info">
+                        <h3>Cancha Fútbol 5</h3>
+                        <p>Césped sintético de alta calidad</p>
+                        <div class="price">$30/hora</div>
+                        <div class="features">
+                            <span class="feature-tag">Iluminación LED</span>
+                            <span class="feature-tag">Vestuarios</span>
+                            <span class="feature-tag">Estacionamiento</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cancha-card">
+                    <div class="cancha-image">⚽</div>
+                    <div class="cancha-info">
+                        <h3>Cancha Fútbol 7</h3>
+                        <p>Césped natural bien mantenido</p>
+                        <div class="price">$50/hora</div>
+                        <div class="features">
+                            <span class="feature-tag">Gradas</span>
+                            <span class="feature-tag">Vestuarios</span>
+                            <span class="feature-tag">Cafetería</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cancha-card">
+                    <div class="cancha-image">⚽</div>
+                    <div class="cancha-info">
+                        <h3>Cancha Fútbol 11</h3>
+                        <p>Cancha profesional reglamentaria</p>
+                        <div class="price">$80/hora</div>
+                        <div class="features">
+                            <span class="feature-tag">Gradas para 200</span>
+                            <span class="feature-tag">Vestuarios Premium</span>
+                            <span class="feature-tag">Marcador Electrónico</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="reservations-list">
+            <h2 style="margin-bottom: 1.5rem; color: #333;">Mis Reservas</h2>
+            <div id="reservasList">
+                <p style="color: #999; text-align: center;">No hay reservas aún. ¡Haz tu primera reserva!</p>
+            </div>
+        </section>
+    </div>
+
+    <footer id="contacto">
+        <h3 style="margin-bottom: 1rem;">CanchaYa</h3>
+        <p>📍 Av. Principal 123, Ciudad</p>
+        <p>📞 +123 456 7890</p>
+        <p>✉️ info@canchaya.com</p>
+        <p style="margin-top: 1rem; color: #999;">© 2025 CanchaYa. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        const reservas = [];
+
+        function hacerReserva() {
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const telefono = document.getElementById('telefono').value;
+            const cancha = document.getElementById('cancha').value;
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+
+            if (!nombre || !email || !telefono || !cancha || !fecha || !hora) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            const canchaNames = {
+                'futbol5': 'Cancha Fútbol 5',
+                'futbol7': 'Cancha Fútbol 7',
+                'futbol11': 'Cancha Fútbol 11'
+            };
+
+            const reserva = {
+                nombre,
+                email,
+                telefono,
+                cancha: canchaNames[cancha],
+                fecha,
+                hora
+            };
+
+            reservas.push(reserva);
+            mostrarReservas();
+            document.getElementById('bookingForm').reset();
+            alert('¡Reserva confirmada! Recibirás un email de confirmación.');
+        }
+
+        function mostrarReservas() {
+            const lista = document.getElementById('reservasList');
+            if (reservas.length === 0) {
+                lista.innerHTML = '<p style="color: #999; text-align: center;">No hay reservas aún. ¡Haz tu primera reserva!</p>';
+                return;
+            }
+
+            lista.innerHTML = reservas.map((r, i) => `
+                <div class="reservation-item">
+                    <h4>${r.cancha}</h4>
+                    <p><strong>Nombre:</strong> ${r.nombre}</p>
+                    <p><strong>Fecha:</strong> ${r.fecha} - ${r.hora}</p>
+                    <p><strong>Contacto:</strong> ${r.email} | ${r.telefono}</p>
+                </div>
+            `).join('');
+        }
+
+        // Establecer fecha mínima como hoy
+        document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
