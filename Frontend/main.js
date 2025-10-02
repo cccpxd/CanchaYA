@@ -1,5 +1,4 @@
 const reservas = [];
-let patino;
 function hacerReserva() {
     const nombre = document.getElementById('nombre').value;
     const email = document.getElementById('email').value;
