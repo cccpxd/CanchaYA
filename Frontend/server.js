@@ -10,10 +10,10 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Conexión a MongoDB (usa tu string de conexión en MONGODB_URI)
-mongoose.connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(r => "Conectado a MongoDB");
+mongoose.connect(process.env.MONGO_URL)
+    .then(() => console.log("✅ Conectado a MongoDB"))
+    .catch(err => console.error("❌ Error al conectar a MongoDB:", err));
+
 
 //
 // Modelo de reserva
@@ -29,7 +29,7 @@ const Reserva = mongoose.model("Reserva", reservaSchema);
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname)));
 
 // Obtener reservas
 app.get("/reservas", async (req, res) => {
