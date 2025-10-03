@@ -1,126 +1,145 @@
-document.addEventListener("DOMContentLoaded", () => {
+// login.js
 
-    // Formulario login
-    const loginForm = document.getElementById("loginForm");
-    // Formulario registro
-    const registerForm = document.getElementById("registerForm");
-    // Div de bienvenida
-    const welcomeDiv = document.getElementById("welcome");
-    const userNameSpan = document.getElementById("userName");
-    // Lista de reservas
-    const lista = document.getElementById("listaReservas");
+const API_BASE = "/"; // Ajusta si tu backend está en otra ruta
 
-    // ---------- REGISTRO ----------
-    if (registerForm) {
-        registerForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("emailRegister").value;
-            const password = document.getElementById("passwordRegister").value;
+// --- REGISTRO ---
+const registerForm = document.getElementById("registerForm");
+registerForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("nameRegister").value;
+    const email = document.getElementById("emailRegister").value;
+    const password = document.getElementById("passwordRegister").value;
 
-            try {
-                const res = await fetch("http://localhost:8080/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, email, password })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    alert(data.mensaje);
-                    registerForm.reset();
-                } else {
-                    alert(data.error);
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Error al registrar usuario");
-            }
+    try {
+        const res = await fetch(`${API_BASE}register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password })
         });
-    }
-
-    // ---------- LOGIN ----------
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const email = document.getElementById("emailLogin").value;
-            const password = document.getElementById("password").value;
-
-            try {
-                const res = await fetch("http://localhost:8080/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    // Guardar token y nombre
-                    localStorage.setItem("token", data.token);
-                    localStorage.setItem("name", data.name);
-
-                    userNameSpan.textContent = data.name;
-                    welcomeDiv.style.display = "block";
-                    loginForm.style.display = "none";
-
-                    mostrarReservas();
-                } else {
-                    alert(data.error);
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Error al iniciar sesión");
-            }
-        });
-    }
-
-    // ---------- LOGOUT ----------
-    window.logout = function () {
-        localStorage.removeItem("token");
-        localStorage.removeItem("name");
-        welcomeDiv.style.display = "none";
-        loginForm.style.display = "block";
-        lista.innerHTML = "";
-    }
-
-    // ---------- MOSTRAR RESERVAS ----------
-    async function mostrarReservas() {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        try {
-            const res = await fetch("http://localhost:8080/reservas", {
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            const data = await res.json();
-
-            if (!Array.isArray(data)) {
-                console.error("Error al cargar reservas:", data);
-                lista.innerHTML = "<li>No se pudieron cargar las reservas</li>";
-                return;
-            }
-
-            lista.innerHTML = "";
-            data.forEach(r => {
-                const li = document.createElement("li");
-                li.textContent = `${r.nombre} - ${r.cancha} - ${r.fecha} ${r.hora}`;
-                lista.appendChild(li);
-            });
-        } catch (err) {
-            console.error(err);
-            lista.innerHTML = "<li>Error al cargar reservas</li>";
+        const data = await res.json();
+        if (res.ok) {
+            alert("Registro exitoso. Ahora inicia sesión.");
+            registerForm.reset();
+        } else {
+            alert(data.error || "Error en el registro");
         }
+    } catch (err) {
+        console.error(err);
+        alert("Error al conectarse al servidor");
     }
+});
 
-    // Si ya hay token guardado, mostrar bienvenida y reservas
-    const savedName = localStorage.getItem("name");
-    const savedToken = localStorage.getItem("token");
-    if (savedToken && savedName) {
-        userNameSpan.textContent = savedName;
-        welcomeDiv.style.display = "block";
-        if (loginForm) loginForm.style.display = "none";
-        mostrarReservas();
+// --- LOGIN ---
+const loginForm = document.getElementById("loginForm");
+loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("emailLogin").value;
+    const password = document.getElementById("passwordLogin").value;
+
+    try {
+        const res = await fetch(`${API_BASE}login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            // Guardar token y mostrar contenido protegido
+            localStorage.setItem("token", data.token);
+            document.getElementById("userName").textContent = data.name;
+            document.getElementById("welcome").style.display = "block";
+            document.getElementById("protectedContent").style.display = "block";
+            loginForm.reset();
+            cargarReservas();
+        } else {
+            alert(data.error || "Usuario o contraseña incorrecta");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al conectarse al servidor");
+    }
+});
+
+// --- LOGOUT ---
+function logout() {
+    localStorage.removeItem("token");
+    document.getElementById("welcome").style.display = "none";
+    document.getElementById("protectedContent").style.display = "none";
+}
+window.logout = logout; // para que funcione onclick en HTML
+
+// --- RESERVAS ---
+async function cargarReservas() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const res = await fetch(`${API_BASE}reservas`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("No autorizado");
+        const reservas = await res.json();
+        const lista = document.getElementById("reservasList");
+        if (reservas.length === 0) {
+            lista.innerHTML = '<p style="color: #999; text-align: center;">No hay reservas aún. ¡Haz tu primera reserva!</p>';
+            return;
+        }
+        lista.innerHTML = reservas.map(r => `
+            <div class="reserva-card">
+                <strong>${r.nombre}</strong> - ${r.cancha} <br>
+                📅 ${r.fecha} ⏰ ${r.hora}
+            </div>
+        `).join("");
+    } catch (err) {
+        console.error(err);
+        document.getElementById("reservasList").innerHTML = '<p style="color: red;">Error al cargar reservas</p>';
+    }
+}
+
+// --- CREAR RESERVA ---
+const bookingForm = document.getElementById("bookingForm");
+bookingForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Debes iniciar sesión primero");
+
+    const reserva = {
+        nombre: document.getElementById("nombreReserva").value,
+        email: document.getElementById("emailReserva").value,
+        telefono: document.getElementById("telefonoReserva").value,
+        cancha: document.getElementById("cancha").value,
+        fecha: document.getElementById("fecha").value,
+        hora: document.getElementById("hora").value,
+    };
+
+    try {
+        const res = await fetch(`${API_BASE}reservas`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(reserva)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            bookingForm.reset();
+            cargarReservas();
+        } else {
+            alert(data.error || "Error al guardar reserva");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al conectarse al servidor");
+    }
+});
+
+// --- Inicialización ---
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        document.getElementById("welcome").style.display = "block";
+        document.getElementById("protectedContent").style.display = "block";
+        cargarReservas();
     }
 });
