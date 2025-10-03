@@ -7,36 +7,36 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<!-- LOGIN -->
 <h2>Login</h2>
 <form id="loginForm">
-    <label>Email:</label>
+    <label for="emailLogin">Email:</label>
     <input type="email" id="emailLogin" required><br><br>
-    <label>Contraseña:</label>
-    <input type="password" id="password" required><br><br>
+    <label for="passwordLogin">Contraseña:</label>
+    <input type="password" id="passwordLogin" required><br><br>
     <button type="submit">Ingresar</button>
 </form>
 
+<!-- REGISTRO -->
+<h2>Registro</h2>
+<form id="registerForm">
+    <label for="nameRegister">Nombre:</label>
+    <input type="text" id="nameRegister" required><br><br>
+    <label for="emailRegister">Email:</label>
+    <input type="email" id="emailRegister" required><br><br>
+    <label for="passwordRegister">Contraseña:</label>
+    <input type="password" id="passwordRegister" required><br><br>
+    <button type="submit">Registrarse</button>
+</form>
+
+<!-- BIENVENIDA -->
 <div id="welcome" style="display:none;">
     <h3>Bienvenido <span id="userName"></span>!</h3>
     <button onclick="logout()">Cerrar sesión</button>
 </div>
 
-<h2>Mis Reservas</h2>
-<ul id="listaReservas"></ul>
-
-<script src="./login.js"></script>
-<h2>Registro</h2>
-<form id="registerForm">
-    <label>Nombre:</label>
-    <input type="text" id="name" required><br><br>
-    <label>Email:</label>
-    <input type="email" id="emailRegister" required><br><br>
-    <label>Contraseña:</label>
-    <input type="password" id="passwordRegister" required><br><br>
-    <button type="submit">Registrarse</button>
-</form>
-
-<div id="protectedContent" style="display:none;">
+<!-- HEADER / NAV -->
 <header>
     <nav>
         <div class="logo">⚽ CanchaYa</div>
@@ -49,26 +49,28 @@
     </nav>
 </header>
 
+<!-- SECCIÓN HERO -->
 <section class="hero" id="inicio">
     <h1>Reserva tu Cancha de Fútbol</h1>
     <p>La forma más fácil y rápida de encontrar y reservar canchas cerca de ti</p>
 </section>
 
+<!-- FORMULARIO RESERVA -->
 <div class="container">
     <section class="booking-section" id="reservar">
         <h2 style="margin-bottom: 1.5rem; color: #333;">Hacer una Reserva</h2>
         <form class="booking-form" id="bookingForm">
             <div class="form-group">
-                <label for="nombre">Nombre Completo</label>
-                <input type="text" id="nombre" required>
+                <label for="nombreReserva">Nombre Completo</label>
+                <input type="text" id="nombreReserva" required>
             </div>
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required>
+                <label for="emailReserva">Email</label>
+                <input type="email" id="emailReserva" required>
             </div>
             <div class="form-group">
-                <label for="telefono">Teléfono</label>
-                <input type="tel" id="telefono" required>
+                <label for="telefonoReserva">Teléfono</label>
+                <input type="tel" id="telefonoReserva" required>
             </div>
             <div class="form-group">
                 <label for="cancha">Selecciona una Cancha</label>
@@ -100,6 +102,7 @@
         </form>
     </section>
 
+    <!-- SECCIÓN CANCHAS -->
     <section id="canchas">
         <h2 style="color: white; text-align: center; margin-bottom: 2rem; font-size: 2rem;">Nuestras Canchas</h2>
         <div class="canchas-grid">
@@ -132,6 +135,7 @@
         </div>
     </section>
 
+    <!-- LISTA DE RESERVAS -->
     <section class="reservations-list">
         <h2 style="margin-bottom: 1.5rem; color: #333;">Mis Reservas</h2>
         <div id="reservasList">
@@ -140,6 +144,7 @@
     </section>
 </div>
 
+<!-- FOOTER -->
 <footer id="contacto">
     <h3 style="margin-bottom: 1rem;">CanchaYa</h3>
     <p>📍 Av. Principal 123, Ciudad</p>
@@ -148,50 +153,6 @@
     <p style="margin-top: 1rem; color: #999;">© 2025 CanchaYa. Todos los derechos reservados.</p>
 </footer>
 
-<script>
-const API_URL = "/reservas"; // Railway sirve el mismo dominio
-
-// Cargar reservas al inicio
-async function cargarReservas() {
-    const res = await fetch(API_URL);
-    const reservas = await res.json();
-    const lista = document.getElementById("reservasList");
-    if (reservas.length === 0) {
-        lista.innerHTML = '<p style="color: #999; text-align: center;">No hay reservas aún. ¡Haz tu primera reserva!</p>';
-        return;
-    }
-    lista.innerHTML = reservas.map(r => `
-        <div class="reserva-card">
-            <strong>${r.nombre}</strong> - ${r.cancha} <br>
-            📅 ${r.fecha} ⏰ ${r.hora}
-        </div>
-    `).join("");
-}
-
-// Guardar nueva reserva
-document.getElementById("bookingForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const reserva = {
-        nombre: document.getElementById("nombre").value,
-        email: document.getElementById("email").value,
-        telefono: document.getElementById("telefono").value,
-        cancha: document.getElementById("cancha").value,
-        fecha: document.getElementById("fecha").value,
-        hora: document.getElementById("hora").value,
-    };
-    await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reserva),
-    });
-    e.target.reset();
-    await cargarReservas();
-});
-
-// Inicializar
-cargarReservas();
-</script>
-
-</div>
+<script src="./login.js"></script>
 </body>
 </html>
