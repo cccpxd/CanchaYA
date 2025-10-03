@@ -66,8 +66,8 @@
                     <option value="20:00">08:00 PM</option>
                 </select>
             </div>
+            <button type="submit" class="btn">Confirmar Reserva</button>
         </form>
-        <button class="btn" onclick="hacerReserva()">Confirmar Reserva</button>
     </section>
 
     <section id="canchas">
@@ -79,11 +79,6 @@
                     <h3>Cancha Fútbol 5</h3>
                     <p>Césped sintético de alta calidad</p>
                     <div class="price">$30/hora</div>
-                    <div class="features">
-                        <span class="feature-tag">Iluminación LED</span>
-                        <span class="feature-tag">Vestuarios</span>
-                        <span class="feature-tag">Estacionamiento</span>
-                    </div>
                 </div>
             </div>
 
@@ -93,11 +88,6 @@
                     <h3>Cancha Fútbol 7</h3>
                     <p>Césped natural bien mantenido</p>
                     <div class="price">$50/hora</div>
-                    <div class="features">
-                        <span class="feature-tag">Gradas</span>
-                        <span class="feature-tag">Vestuarios</span>
-                        <span class="feature-tag">Cafetería</span>
-                    </div>
                 </div>
             </div>
 
@@ -107,11 +97,6 @@
                     <h3>Cancha Fútbol 11</h3>
                     <p>Cancha profesional reglamentaria</p>
                     <div class="price">$80/hora</div>
-                    <div class="features">
-                        <span class="feature-tag">Gradas para 200</span>
-                        <span class="feature-tag">Vestuarios Premium</span>
-                        <span class="feature-tag">Marcador Electrónico</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -133,6 +118,48 @@
     <p style="margin-top: 1rem; color: #999;">© 2025 CanchaYa. Todos los derechos reservados.</p>
 </footer>
 
-<script src="main.js"></script>
+<script>
+const API_URL = "/reservas"; // Railway sirve el mismo dominio
+
+// Cargar reservas al inicio
+async function cargarReservas() {
+    const res = await fetch(API_URL);
+    const reservas = await res.json();
+    const lista = document.getElementById("reservasList");
+    if (reservas.length === 0) {
+        lista.innerHTML = '<p style="color: #999; text-align: center;">No hay reservas aún. ¡Haz tu primera reserva!</p>';
+        return;
+    }
+    lista.innerHTML = reservas.map(r => `
+        <div class="reserva-card">
+            <strong>${r.nombre}</strong> - ${r.cancha} <br>
+            📅 ${r.fecha} ⏰ ${r.hora}
+        </div>
+    `).join("");
+}
+
+// Guardar nueva reserva
+document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const reserva = {
+        nombre: document.getElementById("nombre").value,
+        email: document.getElementById("email").value,
+        telefono: document.getElementById("telefono").value,
+        cancha: document.getElementById("cancha").value,
+        fecha: document.getElementById("fecha").value,
+        hora: document.getElementById("hora").value,
+    };
+    await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reserva),
+    });
+    e.target.reset();
+    cargarReservas();
+});
+
+// Inicializar
+cargarReservas();
+</script>
 </body>
 </html>
