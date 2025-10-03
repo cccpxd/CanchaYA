@@ -2,7 +2,7 @@
   "name": "canchaya",
   "version": "1.0.0",
   "description": "",
-  "main": "frontend/server.js",
+  "main": "Frontend/server.js",
   "scripts": {
     "start": "node frontend/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
