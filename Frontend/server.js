@@ -53,3 +53,31 @@ app.post("/reservas", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
+
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import User from "users.js"; // ajusta la ruta según tu proyecto
+
+const JWT_SECRET = process.env.MONGOTOKEN; // cámbialo por uno seguro
+
+// Ruta login
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
+
+        const valid = await bcrypt.compare(password, user.passwordHash);
+        if (!valid) return res.status(400).json({ error: "Contraseña incorrecta" });
+
+        // Generar token
+        const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: "1h" });
+
+        res.json({ token, name: user.name });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+});
+

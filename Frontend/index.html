@@ -7,6 +7,23 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<h2>Login</h2>
+<form id="loginForm">
+    <label>Email:</label>
+    <input type="email" id="emailLogin" required><br><br>
+    <label>Contraseña:</label>
+    <input type="password" id="password" required><br><br>
+    <button type="submit">Ingresar</button>
+</form>
+
+<div id="welcome" style="display:none;">
+    <h3>Bienvenido <span id="userName"></span>!</h3>
+    <button onclick="logout()">Cerrar sesión</button>
+</div>
+
+<script src="login.js"></script>
+
+<div id="protectedContent" style="display:none;">
 <header>
     <nav>
         <div class="logo">⚽ CanchaYa</div>
@@ -155,11 +172,13 @@ document.getElementById("bookingForm").addEventListener("submit", async (e) => {
         body: JSON.stringify(reserva),
     });
     e.target.reset();
-    cargarReservas();
+    await cargarReservas();
 });
 
 // Inicializar
 cargarReservas();
 </script>
+
+</div>
 </body>
 </html>
