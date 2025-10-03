@@ -56,8 +56,7 @@ app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "Frontend/users.js";
-
+const User = require("./user.js");
 const JWT_SECRET = process.env.MONGOTOKEN; // cámbialo por uno seguro
 
 // Ruta login
