@@ -1,6 +1,5 @@
 // Frontend/server.js
-import dotenv from "dotenv";
-dotenv.config();
+require("dotenv").config();
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -55,10 +54,10 @@ app.post("/reservas", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("./user"); // Asegúrate que tu archivo se llama "user.js" exactamente
 
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import User from "./user.js";
 
 const JWT_SECRET = process.env.MONGOTOKEN; // cámbialo por uno seguro
 
