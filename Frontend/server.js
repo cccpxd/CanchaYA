@@ -1,4 +1,3 @@
-// Frontend/server.js
 require("dotenv").config();
 
 const express = require("express");
@@ -6,17 +5,24 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const path = require("path");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("./user"); // Asegúrate de tener User.js en la misma carpeta
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+const JWT_SECRET = process.env.MONGOTOKEN || "supersecreto123";
 
-// Conexión a MongoDB (usa tu string de conexión en MONGODB_URI)
+// Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("✅ Conectado a MongoDB"))
     .catch(err => console.error("❌ Error al conectar a MongoDB:", err));
 
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname)));
 
-//
 // Modelo de reserva
 const reservaSchema = new mongoose.Schema({
     nombre: String,
@@ -25,27 +31,31 @@ const reservaSchema = new mongoose.Schema({
     cancha: String,
     fecha: String,
     hora: String,
+    userId: { type: String, required: true } // Usuario que creó la reserva
 });
 const Reserva = mongoose.model("Reserva", reservaSchema);
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname)));
+// Middleware de autenticación
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers.authorization; // Se espera "Bearer <token>"
+    if (!authHeader) return res.status(401).json({ error: "No autorizado" });
 
-// Obtener reservas
-app.get("/reservas", async (req, res) => {
+    const token = authHeader.split(" ")[1];
     try {
-        const reservas = await Reserva.find().sort({ _id: -1 });
-        res.json(reservas);
-    } catch (err) {
-        res.status(500).json({ error: "Error al obtener reservas" });
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; // contiene id y name
+        next();
+    } catch {
+        res.status(401).json({ error: "Token inválido" });
     }
-});
+};
 
-// Crear reserva
-app.post("/reservas", async (req, res) => {
+// Rutas reservas
+
+// Crear reserva (solo usuarios autenticados)
+app.post("/reservas", authMiddleware, async (req, res) => {
     try {
-        const reserva = new Reserva(req.body);
+        const reserva = new Reserva({ ...req.body, userId: req.user.id });
         await reserva.save();
         res.json({ mensaje: "Reserva guardada", reserva });
     } catch (err) {
@@ -53,15 +63,17 @@ app.post("/reservas", async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const User = require("./user"); // Asegúrate que tu archivo se llama "user.js" exactamente
+// Obtener reservas del usuario logueado
+app.get("/reservas", authMiddleware, async (req, res) => {
+    try {
+        const reservas = await Reserva.find({ userId: req.user.id }).sort({ _id: -1 });
+        res.json(reservas);
+    } catch (err) {
+        res.status(500).json({ error: "Error al obtener reservas" });
+    }
+});
 
-
-const JWT_SECRET = process.env.MONGOTOKEN; // cámbialo por uno seguro
-
-// Ruta login
+// Login
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
@@ -72,7 +84,6 @@ app.post("/login", async (req, res) => {
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return res.status(400).json({ error: "Contraseña incorrecta" });
 
-        // Generar token
         const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: "1h" });
 
         res.json({ token, name: user.name });
@@ -81,4 +92,6 @@ app.post("/login", async (req, res) => {
         res.status(500).json({ error: "Error en el servidor" });
     }
 });
+
+app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
 
