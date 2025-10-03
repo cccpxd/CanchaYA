@@ -21,7 +21,20 @@
     <button onclick="logout()">Cerrar sesión</button>
 </div>
 
-<script src="login.js"></script>
+<h2>Mis Reservas</h2>
+<ul id="listaReservas"></ul>
+
+<script src="./login.js"></script>
+<h2>Registro</h2>
+<form id="registerForm">
+    <label>Nombre:</label>
+    <input type="text" id="name" required><br><br>
+    <label>Email:</label>
+    <input type="email" id="emailRegister" required><br><br>
+    <label>Contraseña:</label>
+    <input type="password" id="passwordRegister" required><br><br>
+    <button type="submit">Registrarse</button>
+</form>
 
 <div id="protectedContent" style="display:none;">
 <header>
