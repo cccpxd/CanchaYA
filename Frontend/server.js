@@ -1,36 +1,54 @@
+// Frontend/server.js
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Conexión a MongoDB (usa tu string de conexión en MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(r => "Conectado a MongoDB");
+
+//
+// Modelo de reserva
+const reservaSchema = new mongoose.Schema({
+    nombre: String,
+    email: String,
+    telefono: String,
+    cancha: String,
+    fecha: String,
+    hora: String,
+});
+const Reserva = mongoose.model("Reserva", reservaSchema);
+
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public"))); // sirve tu frontend
+app.use(express.static(path.join(__dirname, "public")));
 
-const filePath = path.join(__dirname, "reservas.json");
-
-// Leer reservas
-app.get("/reservas", (req, res) => {
-    if (!fs.existsSync(filePath)) return res.json([]);
-    const data = fs.readFileSync(filePath, "utf8");
-    res.json(data ? JSON.parse(data) : []);
+// Obtener reservas
+app.get("/reservas", async (req, res) => {
+    try {
+        const reservas = await Reserva.find().sort({ _id: -1 });
+        res.json(reservas);
+    } catch (err) {
+        res.status(500).json({ error: "Error al obtener reservas" });
+    }
 });
 
 // Crear reserva
-app.post("/reservas", (req, res) => {
-    let reservas = [];
-    if (fs.existsSync(filePath)) {
-        reservas = JSON.parse(fs.readFileSync(filePath, "utf8") || "[]");
+app.post("/reservas", async (req, res) => {
+    try {
+        const reserva = new Reserva(req.body);
+        await reserva.save();
+        res.json({ mensaje: "Reserva guardada", reserva });
+    } catch (err) {
+        res.status(500).json({ error: "Error al guardar la reserva" });
     }
-
-    reservas.push(req.body);
-
-    fs.writeFileSync(filePath, JSON.stringify(reservas, null, 2));
-    res.json({ mensaje: "Reserva guardada", reserva: req.body });
 });
 
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
