@@ -7,153 +7,164 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<!-- LOGIN -->
-<h2>Login</h2>
-<form id="loginForm">
-    <label for="emailLogin">Email:</label>
-    <input type="email" id="emailLogin" required><br><br>
-    <label for="passwordLogin">Contraseña:</label>
-    <input type="password" id="passwordLogin" required><br><br>
-    <button type="submit">Ingresar</button>
-</form>
-
-<!-- REGISTRO -->
-<h2>Registro</h2>
-<form id="registerForm">
-    <label for="nameRegister">Nombre:</label>
-    <input type="text" id="nameRegister" required><br><br>
-    <label for="emailRegister">Email:</label>
-    <input type="email" id="emailRegister" required><br><br>
-    <label for="passwordRegister">Contraseña:</label>
-    <input type="password" id="passwordRegister" required><br><br>
-    <button type="submit">Registrarse</button>
-</form>
-
-<!-- BIENVENIDA -->
-<div id="welcome" style="display:none;">
-    <h3>Bienvenido <span id="userName"></span>!</h3>
-    <button onclick="logout()">Cerrar sesión</button>
-</div>
-<div class="container" id="protectedContent" style="display:none;">
-<!-- HEADER / NAV -->
 <header>
     <nav>
-        <div class="logo">⚽ CanchaYa</div>
-        <ul class="nav-links">
+        <div class="logo"><img src="img/logo.png" alt="CanchaYa Logo"></div>
+        <ul class="nav-links" id="navLinks" style="display:none;">
             <li><a href="#inicio">Inicio</a></li>
             <li><a href="#canchas">Canchas</a></li>
             <li><a href="#reservar">Reservar</a></li>
             <li><a href="#contacto">Contacto</a></li>
         </ul>
     </nav>
+
+    <!-- SECCIÓN DE BIENVENIDA / LOGIN -->
+    <div id="welcomeSection">
+        <div id="authForms">
+            <!-- LOGIN -->
+            <div class="auth-box">
+                <h2>Iniciar Sesión</h2>
+                <form id="loginForm">
+                    <input type="email" id="emailLogin" placeholder="Email" required>
+                    <input type="password" id="passwordLogin" placeholder="Contraseña" required>
+                    <button type="submit" class="btn">Ingresar</button>
+                </form>
+            </div>
+
+            <!-- REGISTRO -->
+            <div class="auth-box">
+                <h2>Registro</h2>
+                <form id="registerForm">
+                    <input type="text" id="nameRegister" placeholder="Nombre" required>
+                    <input type="email" id="emailRegister" placeholder="Email" required>
+                    <input type="password" id="passwordRegister" placeholder="Contraseña" required>
+                    <button type="submit" class="btn">Registrarse</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- BIENVENIDA POST LOGIN -->
+        <div id="welcome" style="display:none;">
+            <h3>Bienvenido <span id="userName"></span>!</h3>
+            <button class="btn" onclick="logout()">Cerrar sesión</button>
+        </div>
+    </div>
 </header>
 
-<!-- SECCIÓN HERO -->
-<section class="hero" id="inicio">
-    <h1>Reserva tu Cancha de Fútbol</h1>
-    <p>La forma más fácil y rápida de encontrar y reservar canchas cerca de ti</p>
-</section>
-
-<!-- FORMULARIO RESERVA -->
-<div class="container">
-    <section class="booking-section" id="reservar">
-        <h2 style="margin-bottom: 1.5rem; color: #333;">Hacer una Reserva</h2>
-        <form class="booking-form" id="bookingForm">
-            <div class="form-group">
-                <label for="nombreReserva">Nombre Completo</label>
-                <input type="text" id="nombreReserva" required>
-            </div>
-            <div class="form-group">
-                <label for="emailReserva">Email</label>
-                <input type="email" id="emailReserva" required>
-            </div>
-            <div class="form-group">
-                <label for="telefonoReserva">Teléfono</label>
-                <input type="tel" id="telefonoReserva" required>
-            </div>
-            <div class="form-group">
-                <label for="cancha">Selecciona una Cancha</label>
-                <select id="cancha" required>
-                    <option value="">-- Selecciona --</option>
-                    <option value="futbol5">Cancha Fútbol 5</option>
-                    <option value="futbol7">Cancha Fútbol 7</option>
-                    <option value="futbol11">Cancha Fútbol 11</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="fecha">Fecha</label>
-                <input type="date" id="fecha" required>
-            </div>
-            <div class="form-group">
-                <label for="hora">Hora</label>
-                <select id="hora" required>
-                    <option value="">-- Selecciona --</option>
-                    <option value="08:00">08:00 AM</option>
-                    <option value="10:00">10:00 AM</option>
-                    <option value="12:00">12:00 PM</option>
-                    <option value="14:00">02:00 PM</option>
-                    <option value="16:00">04:00 PM</option>
-                    <option value="18:00">06:00 PM</option>
-                    <option value="20:00">08:00 PM</option>
-                </select>
-            </div>
-            <button type="submit" class="btn">Confirmar Reserva</button>
-        </form>
+<!-- CONTENIDO PRINCIPAL OCULTO -->
+<div id="protectedContent" style="display:none;">
+    <!-- SECCIÓN HERO -->
+    <section class="hero" id="inicio">
+        <h1>Reserva tu Cancha de Fútbol</h1>
+        <p>La forma más fácil y rápida de encontrar y reservar canchas cerca de ti</p>
     </section>
 
-    <!-- SECCIÓN CANCHAS -->
-    <section id="canchas">
-        <h2 style="color: white; text-align: center; margin-bottom: 2rem; font-size: 2rem;">Nuestras Canchas</h2>
-        <div class="canchas-grid">
-            <div class="cancha-card">
-                <div class="cancha-image">⚽</div>
-                <div class="cancha-info">
-                    <h3>Cancha Fútbol 5</h3>
-                    <p>Césped sintético de alta calidad</p>
-                    <div class="price">$30/hora</div>
+    <div class="container">
+        <!-- FORMULARIO RESERVA -->
+        <section class="booking-section" id="reservar">
+            <h2>Hacer una Reserva</h2>
+            <form class="booking-form" id="bookingForm">
+                <div class="form-group">
+                    <label for="nombreReserva">Nombre Completo</label>
+                    <input type="text" id="nombreReserva" required>
+                </div>
+                <div class="form-group">
+                    <label for="emailReserva">Email</label>
+                    <input type="email" id="emailReserva" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefonoReserva">Teléfono</label>
+                    <input type="tel" id="telefonoReserva" required>
+                </div>
+                <div class="form-group">
+                    <label for="cancha">Selecciona una Cancha</label>
+                    <select id="cancha" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="futbol5">Cancha Fútbol 5</option>
+                        <option value="futbol7">Cancha Fútbol 7</option>
+                        <option value="futbol11">Cancha Fútbol 11</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora">Hora</label>
+                    <select id="hora" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="08:00">08:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                        <option value="20:00">08:00 PM</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Confirmar Reserva</button>
+            </form>
+        </section>
+
+        <!-- SECCIÓN CANCHAS -->
+        <section id="canchas">
+            <h2>Nuestras Canchas</h2>
+            <div class="canchas-grid">
+                <div class="cancha-card">
+                    <div class="cancha-image">
+                        <img src="img/cancha5.jpg" alt="Cancha Fútbol 5">
+                    </div>
+                    <div class="cancha-info">
+                        <h3>Cancha Fútbol 5</h3>
+                        <p>Césped sintético de alta calidad</p>
+                        <div class="price">$30/hora</div>
+                    </div>
+                </div>
+
+                <div class="cancha-card">
+                    <div class="cancha-image">
+                        <img src="img/cancha7.jpg" alt="Cancha Fútbol 7">
+                    </div>
+                    <div class="cancha-info">
+                        <h3>Cancha Fútbol 7</h3>
+                        <p>Césped natural bien mantenido</p>
+                        <div class="price">$50/hora</div>
+                    </div>
+                </div>
+
+                <div class="cancha-card">
+                    <div class="cancha-image">
+                        <img src="img/cancha11.jpg" alt="Cancha Fútbol 11">
+                    </div>
+                    <div class="cancha-info">
+                        <h3>Cancha Fútbol 11</h3>
+                        <p>Cancha profesional reglamentaria</p>
+                        <div class="price">$80/hora</div>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="cancha-card">
-                <div class="cancha-image">⚽</div>
-                <div class="cancha-info">
-                    <h3>Cancha Fútbol 7</h3>
-                    <p>Césped natural bien mantenido</p>
-                    <div class="price">$50/hora</div>
-                </div>
+
+        <!-- LISTA DE RESERVAS -->
+        <section class="reservations-list">
+            <h2>Mis Reservas</h2>
+            <div id="reservasList">
+                <p>No hay reservas aún. ¡Haz tu primera reserva!</p>
             </div>
+        </section>
+    </div>
 
-            <div class="cancha-card">
-                <div class="cancha-image">⚽</div>
-                <div class="cancha-info">
-                    <h3>Cancha Fútbol 11</h3>
-                    <p>Cancha profesional reglamentaria</p>
-                    <div class="price">$80/hora</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- LISTA DE RESERVAS -->
-    <section class="reservations-list">
-        <h2 style="margin-bottom: 1.5rem; color: #333;">Mis Reservas</h2>
-        <div id="reservasList">
-            <p style="color: #999; text-align: center;">No hay reservas aún. ¡Haz tu primera reserva!</p>
-        </div>
-    </section>
+    <!-- FOOTER -->
+    <footer id="contacto">
+        <h3>CanchaYa</h3>
+        <p>📍 Av. Principal 123, Ciudad</p>
+        <p>📞 +123 456 7890</p>
+        <p>✉️ info@canchaya.com</p>
+        <p style="margin-top: 1rem; color: #999;">© 2025 CanchaYa. Todos los derechos reservados.</p>
+    </footer>
 </div>
-
-<!-- FOOTER -->
-<footer id="contacto">
-    <h3 style="margin-bottom: 1rem;">CanchaYa</h3>
-    <p>📍 Av. Principal 123, Ciudad</p>
-    <p>📞 +123 456 7890</p>
-    <p>✉️ info@canchaya.com</p>
-    <p style="margin-top: 1rem; color: #999;">© 2025 CanchaYa. Todos los derechos reservados.</p>
-</footer>
 
 <script src="./login.js"></script>
-</div>
 </body>
 </html>

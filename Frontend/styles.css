@@ -25,13 +25,21 @@ nav {
 }
 
 .logo {
-    font-size: 2rem;
-    font-weight: bold;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    display: flex;
+    align-items: center;
 }
+
+.logo img {
+    height: 60px;
+    width: auto;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.logo img:hover {
+    transform: scale(1.05);
+}
+
 
 .nav-links {
     display: flex;
@@ -152,13 +160,24 @@ input:focus, select:focus {
 .cancha-image {
     width: 100%;
     height: 200px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+    border-bottom: 3px solid #667eea;
     display: flex;
-    align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 3rem;
+    align-items: center;
 }
+
+.cancha-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.cancha-card:hover .cancha-image img {
+    transform: scale(1.05);
+}
+
 
 .cancha-info {
     padding: 1.5rem;
@@ -227,3 +246,33 @@ footer {
     text-align: center;
     margin-top: 3rem;
 }
+
+/* Formulario de login/registro en header */
+#welcomeSection {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.auth-box {
+    display: inline-block;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin: 1rem;
+    width: 250px;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 0.7rem;
+    margin-bottom: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.auth-box h2 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+

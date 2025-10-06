@@ -143,3 +143,39 @@ document.addEventListener("DOMContentLoaded", () => {
         cargarReservas();
     }
 });
+
+function mostrarContenido(usuario) {
+  document.getElementById("authForms").style.display = "none";
+  document.getElementById("welcome").style.display = "block";
+  document.getElementById("userName").textContent = usuario;
+  document.getElementById("protectedContent").style.display = "block";
+  document.getElementById("navLinks").style.display = "flex";
+}
+
+function logout() {
+  localStorage.removeItem("usuario");
+  document.getElementById("authForms").style.display = "flex";
+  document.getElementById("welcome").style.display = "none";
+  document.getElementById("protectedContent").style.display = "none";
+  document.getElementById("navLinks").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const usuario = localStorage.getItem("usuario");
+  if (usuario) mostrarContenido(usuario);
+  
+  document.getElementById("loginForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("emailLogin").value;
+    localStorage.setItem("usuario", email);
+    mostrarContenido(email);
+  });
+
+  document.getElementById("registerForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById("nameRegister").value;
+    localStorage.setItem("usuario", nombre);
+    mostrarContenido(nombre);
+  });
+});
+
