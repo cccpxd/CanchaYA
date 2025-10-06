@@ -11,7 +11,11 @@ function hacerReserva() {
         alert('Por favor completa todos los campos');
         return;
     }
+// Obtener la fecha actual en formato YYYY-MM-DD
+    const hoy = new Date().toISOString().split("T")[0];
 
+    // Establecer la fecha mínima en el input
+    document.getElementById("fecha").setAttribute("min", hoy);
     const canchaNames = {
         'futbol5': 'Cancha Fútbol 5',
         'futbol7': 'Cancha Fútbol 7',
@@ -26,6 +30,7 @@ function hacerReserva() {
         fecha,
         hora
     };
+
 // Enviamos la reserva al servidor
     fetch("/reservas", {
         method: "POST",
