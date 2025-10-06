@@ -89,6 +89,16 @@
                     <label for="fecha">Fecha</label>
                     <input type="date" id="fecha" required>
                 </div>
+
+                <script>
+                    // Obtener la fecha actual en formato YYYY-MM-DD
+                    const hoy = new Date().toISOString().split("T")[0];
+
+                    // Establecer la fecha mínima en el input
+                    document.getElementById("fecha").setAttribute("min", hoy);
+                </script>
+
+
                 <div class="form-group">
                     <label for="hora">Hora</label>
                     <select id="hora" required>
