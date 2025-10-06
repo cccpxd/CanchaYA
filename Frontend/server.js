@@ -55,13 +55,28 @@ const authMiddleware = (req, res, next) => {
 // Crear reserva (solo usuarios autenticados)
 app.post("/reservas", authMiddleware, async (req, res) => {
     try {
+        const { cancha, fecha, hora } = req.body;
+
+        // Verificar si ya existe una reserva con los mismos datos
+        const reservaExistente = await Reserva.findOne({ cancha, fecha, hora });
+
+        if (reservaExistente) {
+            return res.status(400).json({
+                error: "Ya existe una reserva para esa cancha, fecha y hora.",
+            });
+        }
+
+        // Si no existe, se guarda normalmente
         const reserva = new Reserva({ ...req.body, userId: req.user.id });
         await reserva.save();
+
         res.json({ mensaje: "Reserva guardada", reserva });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Error al guardar la reserva" });
     }
 });
+
 
 // Obtener reservas del usuario logueado
 app.get("/reservas", authMiddleware, async (req, res) => {
