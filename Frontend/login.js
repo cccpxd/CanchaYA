@@ -1,6 +1,6 @@
 // login.js
 
-const API_BASE = "/"; // Ajusta si tu backend está en otra ruta
+const API_BASE = "/";
 
 // --- REGISTRO ---
 const registerForm = document.getElementById("registerForm");
