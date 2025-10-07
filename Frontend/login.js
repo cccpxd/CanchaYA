@@ -30,11 +30,14 @@ registerForm?.addEventListener("submit", async (e) => {
 });
 /*
 // --- LOGIN ---
+
 const loginForm = document.getElementById("loginForm");
+
 loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("emailLogin").value;
-    const password = document.getElementById("passwordLogin").value;
+
+    const email = document.getElementById("emailLogin").value.trim();
+    const password = document.getElementById("passwordLogin").value.trim();
 
     try {
         const res = await fetch(`${API_BASE}login`, {
@@ -42,20 +45,38 @@ loginForm?.addEventListener("submit", async (e) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
         });
+
         const data = await res.json();
-        if (res.ok) {
-            // Guardar token y mostrar contenido protegido
+
+        // 💡 Validar correctamente
+        if (res.ok && data.token) {
+            // Login exitoso
             localStorage.setItem("token", data.token);
             document.getElementById("userName").textContent = data.name;
             document.getElementById("welcome").style.display = "block";
             document.getElementById("protectedContent").style.display = "block";
+            document.getElementById("container").style.display = "block";
+            document.getElementById("authForms").style.display = "none";
+            document.getElementById("navLinks").style.display = "flex"; // Mostrar menú
             loginForm.reset();
+
+            // Cargar contenido protegido
             cargarReservas();
+
         } else {
+            //  Si el servidor devolvió error, aseguramos limpiar eso
+            localStorage.removeItem("token");
+            document.getElementById("authForms").style.display = "block";
+            document.getElementById("welcome").style.display = "none";
+            document.getElementById("protectedContent").style.display = "none";
+            document.getElementById("container").style.display = "none";
+            document.getElementById("navLinks").style.display = "none";
+
             alert(data.error || "Usuario o contraseña incorrecta");
         }
+
     } catch (err) {
-        console.error(err);
+        console.error("Error en la conexión:", err);
         alert("Error al conectarse al servidor");
     }
 });
