@@ -1,117 +1,176 @@
 const API_BASE = "/";
 
-// Estado global para evitar múltiples cargas
+// Estado global
 let isLoadingReservas = false;
+let isInitialized = false;
 
 // --- UTILIDADES ---
 function showLoading(elementId) {
     const el = document.getElementById(elementId);
-    if (el) el.innerHTML = '<p style="text-align:center;color:#666;">⏳ Cargando...</p>';
+    if (el) el.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">⏳ Cargando...</p>';
 }
 
 function mostrarLogin() {
-    document.getElementById("authForms").style.display = "block";
-    document.getElementById("welcome").style.display = "none";
-    document.getElementById("protectedContent").style.display = "none";
-    document.getElementById("container").style.display = "none";
-    document.getElementById("navLinks").style.display = "none";
+    console.log("🔒 Mostrando formulario de login");
+
+    const authForms = document.getElementById("authForms");
+    const welcome = document.getElementById("welcome");
+    const protectedContent = document.getElementById("protectedContent");
+    const navLinks = document.getElementById("navLinks");
+
+    if (authForms) authForms.style.display = "flex";
+    if (welcome) welcome.style.display = "none";
+    if (protectedContent) protectedContent.style.display = "none";
+    if (navLinks) navLinks.style.display = "none";
 }
 
 function mostrarApp(userName) {
-    document.getElementById("welcome").style.display = "block";
-    document.getElementById("protectedContent").style.display = "block";
-    document.getElementById("container").style.display = "block";
-    document.getElementById("authForms").style.display = "none";
-    document.getElementById("navLinks").style.display = "flex";
+    console.log("🔓 Mostrando app para:", userName);
 
-    if (userName) {
-        const userNameEl = document.getElementById("userName");
-        if (userNameEl) userNameEl.textContent = userName;
+    const authForms = document.getElementById("authForms");
+    const welcome = document.getElementById("welcome");
+    const protectedContent = document.getElementById("protectedContent");
+    const navLinks = document.getElementById("navLinks");
+    const userNameEl = document.getElementById("userName");
+
+    // Ocultar formularios de auth
+    if (authForms) authForms.style.display = "none";
+
+    // Mostrar contenido protegido
+    if (welcome) welcome.style.display = "block";
+    if (protectedContent) protectedContent.style.display = "block";
+    if (navLinks) navLinks.style.display = "flex";
+
+    // Actualizar nombre de usuario
+    if (userNameEl && userName) {
+        userNameEl.textContent = userName;
+        console.log("✅ Nombre actualizado en UI:", userName);
+    } else {
+        console.warn("⚠️ No se pudo actualizar el nombre. userName element:", userNameEl, "userName:", userName);
     }
 }
 
 // --- REGISTRO ---
 const registerForm = document.getElementById("registerForm");
-registerForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.getElementById("nameRegister").value.trim();
-    const email = document.getElementById("emailRegister").value.trim();
-    const password = document.getElementById("passwordRegister").value;
+if (registerForm) {
+    registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    if (!name || !email || !password) {
-        return alert("⚠️ Todos los campos son obligatorios");
-    }
+        const nameInput = document.getElementById("nameRegister");
+        const emailInput = document.getElementById("emailRegister");
+        const passwordInput = document.getElementById("passwordRegister");
 
-    try {
-        const res = await fetch(`${API_BASE}register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            alert("✅ Registro exitoso. Ahora inicia sesión.");
-            registerForm.reset();
-        } else {
-            alert(data.error || "❌ Error en el registro");
+        if (!nameInput || !emailInput || !passwordInput) {
+            console.error("❌ Inputs de registro no encontrados");
+            return alert("❌ Error en el formulario");
         }
-    } catch (err) {
-        console.error("Error en registro:", err);
-        alert("❌ Error de conexión. Verifica que el servidor esté activo.");
-    }
-});
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!name || !email || !password) {
+            return alert("⚠️ Todos los campos son obligatorios");
+        }
+
+        console.log("📤 Intentando registrar:", email);
+
+        try {
+            const res = await fetch(`${API_BASE}register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            const data = await res.json();
+            console.log("📥 Respuesta de registro:", { status: res.status, data });
+
+            if (res.ok) {
+                alert("✅ Registro exitoso. Ahora inicia sesión.");
+                registerForm.reset();
+            } else {
+                alert(data.error || "❌ Error en el registro");
+            }
+        } catch (err) {
+            console.error("❌ Error en registro:", err);
+            alert("❌ Error de conexión. Verifica que el servidor esté activo.");
+        }
+    });
+}
 
 // --- LOGIN ---
 const loginForm = document.getElementById("loginForm");
+if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-loginForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+        const emailInput = document.getElementById("emailLogin");
+        const passwordInput = document.getElementById("passwordLogin");
 
-    const email = document.getElementById("emailLogin").value.trim();
-    const password = document.getElementById("passwordLogin").value.trim();
-
-    if (!email || !password) {
-        return alert("⚠️ Email y contraseña son obligatorios");
-    }
-
-    try {
-        const res = await fetch(`${API_BASE}login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.token) {
-            // Guardar token y datos del usuario
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("userName", data.name);
-
-            console.log("✅ Login exitoso, token guardado");
-
-            // Mostrar interfaz
-            mostrarApp(data.name);
-            loginForm.reset();
-
-            // Cargar reservas después de mostrar la interfaz
-            setTimeout(() => cargarReservas(), 100);
-        } else {
-            localStorage.removeItem("token");
-            localStorage.removeItem("userName");
-            alert(data.error || "❌ Usuario o contraseña incorrecta");
+        if (!emailInput || !passwordInput) {
+            console.error("❌ Inputs de login no encontrados");
+            return alert("❌ Error en el formulario");
         }
 
-    } catch (err) {
-        console.error("Error en login:", err);
-        alert("❌ Error de conexión. Verifica que el servidor esté activo.");
-    }
-});
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!email || !password) {
+            return alert("⚠️ Email y contraseña son obligatorios");
+        }
+
+        console.log("📤 Intentando login para:", email);
+
+        try {
+            const res = await fetch(`${API_BASE}login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            console.log("📥 Respuesta de login:", { status: res.status, data });
+
+            if (res.ok && data.token) {
+                // Guardar token y datos del usuario
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("userName", data.name);
+
+                console.log("✅ Login exitoso");
+                console.log("💾 Token guardado");
+                console.log("👤 Usuario:", data.name);
+
+                // Limpiar formulario
+                loginForm.reset();
+
+                // Mostrar interfaz (sin delay, el browser ya está listo)
+                mostrarApp(data.name);
+
+                // Pequeño delay para asegurar que el DOM se actualizó
+                setTimeout(async () => {
+                    console.log("📡 Iniciando carga de reservas...");
+                    await cargarReservas();
+                }, 200);
+
+            } else {
+                localStorage.removeItem("token");
+                localStorage.removeItem("userName");
+                console.error("❌ Login fallido:", data.error);
+                alert(data.error || "❌ Usuario o contraseña incorrecta");
+            }
+
+        } catch (err) {
+            console.error("❌ Error en login:", err);
+            alert("❌ Error de conexión. Verifica que el servidor esté activo.");
+        }
+    });
+} else {
+    console.warn("⚠️ loginForm no encontrado en el DOM");
+}
 
 // --- LOGOUT ---
 function logout() {
+    console.log("🚪 Cerrando sesión");
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     location.reload();
@@ -122,7 +181,7 @@ window.logout = logout;
 async function cargarReservas() {
     // Evitar múltiples cargas simultáneas
     if (isLoadingReservas) {
-        console.log("⏳ Ya se están cargando las reservas...");
+        console.log("⏳ Ya se están cargando las reservas, esperando...");
         return;
     }
 
@@ -137,13 +196,13 @@ async function cargarReservas() {
     const lista = document.getElementById("reservasList");
 
     if (!lista) {
-        console.error("❌ Elemento reservasList no encontrado");
+        console.error("❌ Elemento reservasList no encontrado en el DOM");
         isLoadingReservas = false;
         return;
     }
 
     showLoading("reservasList");
-    console.log("📡 Cargando reservas...");
+    console.log("📡 Solicitando reservas al servidor...");
 
     try {
         const res = await fetch(`${API_BASE}reservas`, {
@@ -154,122 +213,175 @@ async function cargarReservas() {
             }
         });
 
-        console.log("📥 Respuesta recibida:", res.status);
+        console.log("📥 Respuesta del servidor:", res.status, res.statusText);
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                // Token inválido o expirado
+                console.error("🚫 Token inválido o expirado");
                 localStorage.removeItem("token");
                 localStorage.removeItem("userName");
                 mostrarLogin();
                 alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
                 return;
             } else {
-                throw new Error(`Error ${res.status}: ${res.statusText}`);
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || `Error ${res.status}`);
             }
         }
 
         const reservas = await res.json();
-        console.log("✅ Reservas cargadas:", reservas);
+        console.log("✅ Reservas recibidas:", reservas);
+        console.log("📊 Cantidad de reservas:", Array.isArray(reservas) ? reservas.length : "NO ES ARRAY");
 
         if (!Array.isArray(reservas)) {
+            console.error("❌ Respuesta inválida del servidor:", typeof reservas, reservas);
             throw new Error("Formato de respuesta inválido - se esperaba un array");
         }
 
         if (reservas.length === 0) {
+            console.log("📭 No hay reservas para mostrar");
             lista.innerHTML = `
-                <p style="color: #999; text-align: center; padding: 20px;">
+                <p style="color: #999; text-align: center; padding: 30px; font-size: 1.1em;">
                     📅 No hay reservas aún. ¡Haz tu primera reserva!
                 </p>`;
         } else {
-            lista.innerHTML = reservas.map(r => `
-                <div class="reserva-card">
-                    <strong>${r.nombre || 'Sin nombre'}</strong> - ${r.cancha || 'Sin cancha'}<br>
-                    📅 ${r.fecha || 'Sin fecha'} ⏰ ${r.hora || 'Sin hora'}
-                    ${r.telefono ? `<br>📞 ${r.telefono}` : ''}
+            console.log("🎨 Renderizando", reservas.length, "reservas...");
+            lista.innerHTML = reservas.map((r, index) => {
+                console.log(`  Reserva ${index + 1}:`, r);
+                return `
+                <div class="reserva-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 15px 0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <strong style="font-size: 1.3em;">${r.nombre || 'Sin nombre'}</strong>
+                        <span style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 15px; font-size: 0.9em;">
+                            ${r.cancha || 'Sin cancha'}
+                        </span>
+                    </div>
+                    <div style="font-size: 1.05em; opacity: 0.95; margin-top: 10px;">
+                        📅 ${r.fecha || 'Sin fecha'} • ⏰ ${r.hora || 'Sin hora'}
+                    </div>
+                    ${r.telefono ? `<div style="margin-top: 8px; opacity: 0.9;">📞 ${r.telefono}</div>` : ''}
+                    ${r.email ? `<div style="margin-top: 5px; opacity: 0.9;">✉️ ${r.email}</div>` : ''}
                 </div>
-            `).join("");
+            `}).join("");
+            console.log("✅ Reservas renderizadas exitosamente");
         }
 
     } catch (err) {
         console.error("❌ Error al cargar reservas:", err);
         lista.innerHTML = `
-            <p style="color: #e74c3c; text-align: center; padding: 20px;">
+            <p style="color: #e74c3c; text-align: center; padding: 30px;">
                 ❌ Error al cargar reservas: ${err.message}<br>
-                <small>Intenta recargar la página</small>
+                <button onclick="window.cargarReservas()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    🔄 Reintentar
+                </button>
             </p>`;
     } finally {
         isLoadingReservas = false;
+        console.log("🏁 Carga de reservas finalizada");
     }
 }
 
+// Hacer la función global para debugging
+window.cargarReservas = cargarReservas;
+
 // --- CREAR RESERVA ---
 const bookingForm = document.getElementById("bookingForm");
-bookingForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+if (bookingForm) {
+    bookingForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-        alert("⚠️ Debes iniciar sesión primero");
-        mostrarLogin();
-        return;
-    }
-
-    const reserva = {
-        nombre: document.getElementById("nombreReserva").value.trim(),
-        email: document.getElementById("emailReserva").value.trim(),
-        telefono: document.getElementById("telefonoReserva").value.trim(),
-        cancha: document.getElementById("cancha").value,
-        fecha: document.getElementById("fecha").value,
-        hora: document.getElementById("hora").value,
-    };
-
-    // Validación básica
-    if (!reserva.nombre || !reserva.email || !reserva.cancha || !reserva.fecha || !reserva.hora) {
-        return alert("⚠️ Por favor completa todos los campos obligatorios");
-    }
-
-    console.log("📤 Enviando reserva:", reserva);
-
-    try {
-        const res = await fetch(`${API_BASE}reservas`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(reserva)
-        });
-
-        const data = await res.json();
-        console.log("📥 Respuesta del servidor:", data);
-
-        if (res.ok) {
-            bookingForm.reset();
-            alert("✅ " + (data.mensaje || "Reserva guardada con éxito"));
-            await cargarReservas();
-        } else if (res.status === 401 || res.status === 403) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("userName");
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("⚠️ Debes iniciar sesión primero");
             mostrarLogin();
-            alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
-        } else {
-            alert("❌ " + (data.error || "Error al guardar reserva"));
+            return;
         }
 
-    } catch (err) {
-        console.error("❌ Error al crear reserva:", err);
-        alert("❌ Error de conexión al guardar la reserva");
-    }
-});
+        const nombreInput = document.getElementById("nombreReserva");
+        const emailInput = document.getElementById("emailReserva");
+        const telefonoInput = document.getElementById("telefonoReserva");
+        const canchaInput = document.getElementById("cancha");
+        const fechaInput = document.getElementById("fecha");
+        const horaInput = document.getElementById("hora");
+
+        if (!nombreInput || !emailInput || !canchaInput || !fechaInput || !horaInput) {
+            console.error("❌ Faltan inputs del formulario");
+            return alert("❌ Error en el formulario");
+        }
+
+        const reserva = {
+            nombre: nombreInput.value.trim(),
+            email: emailInput.value.trim(),
+            telefono: telefonoInput?.value.trim() || '',
+            cancha: canchaInput.value,
+            fecha: fechaInput.value,
+            hora: horaInput.value,
+        };
+
+        // Validación básica
+        if (!reserva.nombre || !reserva.email || !reserva.cancha || !reserva.fecha || !reserva.hora) {
+            return alert("⚠️ Por favor completa todos los campos obligatorios");
+        }
+
+        console.log("📤 Enviando nueva reserva:", reserva);
+
+        try {
+            const res = await fetch(`${API_BASE}reservas`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(reserva)
+            });
+
+            const data = await res.json();
+            console.log("📥 Respuesta de crear reserva:", { status: res.status, data });
+
+            if (res.ok) {
+                bookingForm.reset();
+                alert("✅ " + (data.mensaje || "Reserva guardada con éxito"));
+                console.log("🔄 Recargando lista de reservas...");
+                await cargarReservas();
+            } else if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("userName");
+                mostrarLogin();
+                alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
+            } else {
+                alert("❌ " + (data.error || "Error al guardar reserva"));
+            }
+
+        } catch (err) {
+            console.error("❌ Error al crear reserva:", err);
+            alert("❌ Error de conexión al guardar la reserva");
+        }
+    });
+} else {
+    console.warn("⚠️ bookingForm no encontrado en el DOM");
+}
 
 // --- VALIDAR TOKEN AL INICIAR ---
 document.addEventListener("DOMContentLoaded", async () => {
-    const token = localStorage.getItem("token");
+    if (isInitialized) {
+        console.log("⚠️ Ya inicializado, evitando duplicación");
+        return;
+    }
+    isInitialized = true;
 
-    console.log("🔍 Validando sesión...", token ? "Token encontrado" : "Sin token");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("🚀 CanchaYa - Iniciando aplicación");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+    const token = localStorage.getItem("token");
+    const userName = localStorage.getItem("userName");
+
+    console.log("🔍 Estado del localStorage:");
+    console.log("  - Token:", token ? "✅ Presente" : "❌ Ausente");
+    console.log("  - userName:", userName || "❌ No guardado");
 
     if (!token) {
+        console.log("👉 No hay sesión activa, mostrando login");
         mostrarLogin();
         return;
     }
@@ -277,9 +389,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Mostrar indicador de carga
     const authForms = document.getElementById("authForms");
     if (authForms) {
-        authForms.innerHTML = '<p style="text-align:center;padding:50px;color:#666;">⏳ Validando sesión...</p>';
+        authForms.innerHTML = `
+            <div style="text-align:center; padding:50px;">
+                <p style="color:#666; font-size: 1.2em;">⏳ Validando sesión...</p>
+                <p style="color:#999; font-size: 0.9em; margin-top: 10px;">Conectando con el servidor</p>
+            </div>`;
         authForms.style.display = "block";
     }
+
+    console.log("📡 Verificando token con el servidor...");
 
     try {
         const res = await fetch(`${API_BASE}verify`, {
@@ -290,54 +408,65 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
 
-        console.log("📥 Respuesta de verify:", res.status);
+        console.log("📥 Respuesta de /verify:", res.status, res.statusText);
 
         if (res.ok) {
             const data = await res.json();
-            console.log("✅ Token válido:", data);
+            console.log("✅ Token válido, datos recibidos:", data);
 
-            const userName = data.name || localStorage.getItem("userName");
+            const finalUserName = data.name || userName;
 
-            // Guardar nombre actualizado
             if (data.name) {
                 localStorage.setItem("userName", data.name);
+                console.log("💾 Nombre actualizado en localStorage:", data.name);
             }
 
-            mostrarApp(userName);
+            console.log("🎨 Mostrando interfaz de usuario...");
+            mostrarApp(finalUserName);
 
-            // Cargar reservas después de un pequeño delay
-            setTimeout(() => cargarReservas(), 100);
+            console.log("⏳ Esperando 200ms antes de cargar reservas...");
+            setTimeout(async () => {
+                await cargarReservas();
+            }, 200);
         } else {
-            // Token inválido
-            console.warn("⚠️ Token inválido o expirado");
+            console.warn("⚠️ Token inválido o expirado (status:", res.status + ")");
             localStorage.removeItem("token");
             localStorage.removeItem("userName");
             mostrarLogin();
         }
     } catch (err) {
         console.error("❌ Error al validar token:", err);
+        console.log("🔧 Intentando modo offline con datos locales...");
 
-        // En caso de error de red, intentar modo offline
-        const userName = localStorage.getItem("userName");
         if (userName) {
-            console.log("⚠️ Modo offline - usando datos locales");
+            console.log("✅ userName encontrado en localStorage, usando modo offline");
             mostrarApp(userName);
 
-            // Intentar cargar reservas pero no bloquear si falla
             setTimeout(() => {
                 cargarReservas().catch(() => {
                     const lista = document.getElementById("reservasList");
                     if (lista) {
                         lista.innerHTML = `
-                            <p style="color: #e67e22; text-align: center; padding: 20px;">
-                                ⚠️ No se pudo conectar con el servidor. Verifica tu conexión.
+                            <p style="color: #e67e22; text-align: center; padding: 30px;">
+                                ⚠️ No se pudo conectar con el servidor.<br>
+                                <small style="display: block; margin-top: 10px; color: #999;">
+                                    Verifica tu conexión a internet
+                                </small>
+                                <button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    🔄 Reintentar
+                                </button>
                             </p>`;
                     }
                 });
-            }, 100);
+            }, 200);
         } else {
+            console.log("❌ No hay datos locales, limpiando sesión");
             localStorage.removeItem("token");
             mostrarLogin();
         }
     }
+
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 });
+
+console.log("✅ login.js cargado correctamente");
