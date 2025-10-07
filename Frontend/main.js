@@ -13,9 +13,9 @@ function hacerReserva() {
     }
 
     const canchaNames = {
-        'futbol5': 'Cancha Fútbol 5',
-        'futbol7': 'Cancha Fútbol 7',
-        'futbol11': 'Cancha Fútbol 11'
+        'futbol5': 'Cancha de fútbol 5',
+        'futbol7': 'Cancha de fútbol 7',
+        'futbol11': 'Cancha de fútbol 11'
     };
 
     const reserva = {
