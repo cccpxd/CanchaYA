@@ -26,6 +26,7 @@ function hacerReserva() {
         fecha,
         hora
     };
+
 // Enviamos la reserva al servidor
     fetch("/reservas", {
         method: "POST",
