@@ -13,17 +13,17 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.MONGOTOKEN || "supersecreto123";
 
-// Conexión a MongoDB
+// 🔹 Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("✅ Conectado a MongoDB"))
     .catch(err => console.error("❌ Error al conectar a MongoDB:", err));
 
-// Middleware
+// 🔹 Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));
 
-// Modelo de reserva
+// 🔹 Modelo de reserva
 const reservaSchema = new mongoose.Schema({
     nombre: String,
     email: String,
@@ -35,38 +35,43 @@ const reservaSchema = new mongoose.Schema({
 });
 const Reserva = mongoose.model("Reserva", reservaSchema);
 
-// Middleware de autenticación
+// 🔹 Middleware de autenticación
 const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization; // se espera "Bearer <token>"
     if (!authHeader) return res.status(401).json({ error: "No autorizado" });
 
     const token = authHeader.split(" ")[1];
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // contiene id y name
+        req.user = jwt.verify(token, JWT_SECRET); // contiene id y name
         next();
     } catch {
         res.status(401).json({ error: "Token inválido" });
     }
 };
 
-// Rutas reservas
+// =====================================================
+// ✅ RUTAS
+// =====================================================
 
-// Crear reserva (solo usuarios autenticados)
+// 🔸 Verificar token (para mantener la sesión activa)
+app.get("/verify", authMiddleware, (req, res) => {
+    res.json({ ok: true, user: req.user });
+});
+
+// 🔸 Crear reserva (solo usuarios autenticados)
 app.post("/reservas", authMiddleware, async (req, res) => {
     try {
         const { cancha, fecha, hora } = req.body;
 
-        // Verificar si ya existe una reserva con los mismos datos
+        // Verificar si ya existe una reserva igual
         const reservaExistente = await Reserva.findOne({ cancha, fecha, hora });
-
         if (reservaExistente) {
             return res.status(400).json({
                 error: "Ya existe una reserva para esa cancha, fecha y hora.",
             });
         }
 
-        // Si no existe, se guarda normalmente
+        // Crear nueva reserva
         const reserva = new Reserva({ ...req.body, userId: req.user.id });
         await reserva.save();
 
@@ -77,8 +82,7 @@ app.post("/reservas", authMiddleware, async (req, res) => {
     }
 });
 
-
-// Obtener reservas del usuario logueado
+// 🔸 Obtener reservas del usuario logueado
 app.get("/reservas", authMiddleware, async (req, res) => {
     try {
         const reservas = await Reserva.find({ userId: req.user.id }).sort({ _id: -1 });
@@ -88,7 +92,30 @@ app.get("/reservas", authMiddleware, async (req, res) => {
     }
 });
 
-// Login
+// 🔸 Registro de usuario
+app.post("/register", async (req, res) => {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password)
+        return res.status(400).json({ error: "Todos los campos son obligatorios" });
+
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser)
+            return res.status(400).json({ error: "El usuario ya existe" });
+
+        const passwordHash = await bcrypt.hash(password, 10);
+        const newUser = new User({ name, email, passwordHash });
+        await newUser.save();
+
+        res.json({ mensaje: "Usuario registrado correctamente" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al registrar usuario" });
+    }
+});
+
+// 🔸 Login
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
@@ -100,7 +127,6 @@ app.post("/login", async (req, res) => {
         if (!valid) return res.status(400).json({ error: "Contraseña incorrecta" });
 
         const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: "1h" });
-
         res.json({ token, name: user.name });
     } catch (err) {
         console.error(err);
@@ -108,52 +134,7 @@ app.post("/login", async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
-// Registro de usuario
-app.post("/register", async (req, res) => {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password)
-        return res.status(400).json({ error: "Todos los campos son obligatorios" });
-
-    try {
-        // Verificar si el usuario ya existe
-        const existingUser = await User.findOne({ email });
-        if (existingUser)
-            return res.status(400).json({ error: "El usuario ya existe" });
-
-        // Crear hash de contraseña
-        const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(password, saltRounds);
-
-        // Crear nuevo usuario
-        const newUser = new User({ name, email, passwordHash });
-        await newUser.save();
-
-        res.json({ mensaje: "Usuario registrado correctamente" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Error al registrar usuario" });
-    }
-});
-const app = express();
-app.use(express.json());
-
-// 🔒 Middleware para verificar token
-function authMiddleware(req, res, next) {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ error: "Token faltante" });
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "clave_secreta");
-        req.user = decoded;
-        next();
-    } catch (err) {
-        res.status(401).json({ error: "Token inválido" });
-    }
-}
-
-// ✅ Endpoint para verificar si el token es válido
-app.get("/verify", authMiddleware, (req, res) => {
-    res.json({ valid: true, user: req.user });
-});
+// =====================================================
+// ✅ Servidor
+// =====================================================
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
