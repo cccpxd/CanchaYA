@@ -54,7 +54,6 @@ registerForm?.addEventListener("submit", async (e) => {
         if (res.ok) {
             alert("✅ Registro exitoso. Ahora inicia sesión.");
             registerForm.reset();
-            // Opcional: cambiar a pestaña de login
         } else {
             alert(data.error || "❌ Error en el registro");
         }
@@ -87,18 +86,18 @@ loginForm?.addEventListener("submit", async (e) => {
         const data = await res.json();
 
         if (res.ok && data.token) {
-            // Guardar token y nombre
+            // Guardar token y datos del usuario
             localStorage.setItem("token", data.token);
-            if (data.name) {
-                localStorage.setItem("userName", data.name);
-            }
+            localStorage.setItem("userName", data.name);
+
+            console.log("✅ Login exitoso, token guardado");
 
             // Mostrar interfaz
             mostrarApp(data.name);
             loginForm.reset();
 
             // Cargar reservas después de mostrar la interfaz
-            await cargarReservas();
+            setTimeout(() => cargarReservas(), 100);
         } else {
             localStorage.removeItem("token");
             localStorage.removeItem("userName");
@@ -122,22 +121,40 @@ window.logout = logout;
 // --- CARGAR RESERVAS ---
 async function cargarReservas() {
     // Evitar múltiples cargas simultáneas
-    if (isLoadingReservas) return;
+    if (isLoadingReservas) {
+        console.log("⏳ Ya se están cargando las reservas...");
+        return;
+    }
 
     const token = localStorage.getItem("token");
     if (!token) {
+        console.warn("❌ No hay token para cargar reservas");
         mostrarLogin();
         return;
     }
 
     isLoadingReservas = true;
     const lista = document.getElementById("reservasList");
+
+    if (!lista) {
+        console.error("❌ Elemento reservasList no encontrado");
+        isLoadingReservas = false;
+        return;
+    }
+
     showLoading("reservasList");
+    console.log("📡 Cargando reservas...");
 
     try {
         const res = await fetch(`${API_BASE}reservas`, {
-            headers: { "Authorization": `Bearer ${token}` }
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
         });
+
+        console.log("📥 Respuesta recibida:", res.status);
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
@@ -146,16 +163,17 @@ async function cargarReservas() {
                 localStorage.removeItem("userName");
                 mostrarLogin();
                 alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
+                return;
             } else {
-                throw new Error("Error al obtener reservas");
+                throw new Error(`Error ${res.status}: ${res.statusText}`);
             }
-            return;
         }
 
         const reservas = await res.json();
+        console.log("✅ Reservas cargadas:", reservas);
 
         if (!Array.isArray(reservas)) {
-            throw new Error("Formato de respuesta inválido");
+            throw new Error("Formato de respuesta inválido - se esperaba un array");
         }
 
         if (reservas.length === 0) {
@@ -168,15 +186,17 @@ async function cargarReservas() {
                 <div class="reserva-card">
                     <strong>${r.nombre || 'Sin nombre'}</strong> - ${r.cancha || 'Sin cancha'}<br>
                     📅 ${r.fecha || 'Sin fecha'} ⏰ ${r.hora || 'Sin hora'}
+                    ${r.telefono ? `<br>📞 ${r.telefono}` : ''}
                 </div>
             `).join("");
         }
 
     } catch (err) {
-        console.error("Error al cargar reservas:", err);
+        console.error("❌ Error al cargar reservas:", err);
         lista.innerHTML = `
             <p style="color: #e74c3c; text-align: center; padding: 20px;">
-                ❌ Error al cargar reservas. Intenta recargar la página.
+                ❌ Error al cargar reservas: ${err.message}<br>
+                <small>Intenta recargar la página</small>
             </p>`;
     } finally {
         isLoadingReservas = false;
@@ -209,6 +229,8 @@ bookingForm?.addEventListener("submit", async (e) => {
         return alert("⚠️ Por favor completa todos los campos obligatorios");
     }
 
+    console.log("📤 Enviando reserva:", reserva);
+
     try {
         const res = await fetch(`${API_BASE}reservas`, {
             method: "POST",
@@ -220,10 +242,11 @@ bookingForm?.addEventListener("submit", async (e) => {
         });
 
         const data = await res.json();
+        console.log("📥 Respuesta del servidor:", data);
 
         if (res.ok) {
             bookingForm.reset();
-            alert("✅ Reserva guardada con éxito.");
+            alert("✅ " + (data.mensaje || "Reserva guardada con éxito"));
             await cargarReservas();
         } else if (res.status === 401 || res.status === 403) {
             localStorage.removeItem("token");
@@ -231,11 +254,11 @@ bookingForm?.addEventListener("submit", async (e) => {
             mostrarLogin();
             alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
         } else {
-            alert(data.error || "❌ Error al guardar reserva");
+            alert("❌ " + (data.error || "Error al guardar reserva"));
         }
 
     } catch (err) {
-        console.error("Error al crear reserva:", err);
+        console.error("❌ Error al crear reserva:", err);
         alert("❌ Error de conexión al guardar la reserva");
     }
 });
@@ -243,6 +266,8 @@ bookingForm?.addEventListener("submit", async (e) => {
 // --- VALIDAR TOKEN AL INICIAR ---
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
+
+    console.log("🔍 Validando sesión...", token ? "Token encontrado" : "Sin token");
 
     if (!token) {
         mostrarLogin();
@@ -258,42 +283,61 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const res = await fetch(`${API_BASE}verify`, {
-            headers: { "Authorization": `Bearer ${token}` }
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
         });
+
+        console.log("📥 Respuesta de verify:", res.status);
 
         if (res.ok) {
             const data = await res.json();
+            console.log("✅ Token válido:", data);
+
             const userName = data.name || localStorage.getItem("userName");
 
+            // Guardar nombre actualizado
+            if (data.name) {
+                localStorage.setItem("userName", data.name);
+            }
+
             mostrarApp(userName);
-            await cargarReservas();
+
+            // Cargar reservas después de un pequeño delay
+            setTimeout(() => cargarReservas(), 100);
         } else {
             // Token inválido
+            console.warn("⚠️ Token inválido o expirado");
             localStorage.removeItem("token");
             localStorage.removeItem("userName");
             mostrarLogin();
         }
     } catch (err) {
-        console.error("Error al validar token:", err);
-        // En caso de error de red, intentar usar la sesión localmente
-        // pero informar al usuario
+        console.error("❌ Error al validar token:", err);
+
+        // En caso de error de red, intentar modo offline
         const userName = localStorage.getItem("userName");
         if (userName) {
+            console.log("⚠️ Modo offline - usando datos locales");
             mostrarApp(userName);
-            // Intentar cargar reservas (puede fallar pero no bloqueará la UI)
-            cargarReservas().catch(() => {
-                document.getElementById("reservasList").innerHTML = `
-                    <p style="color: #e67e22; text-align: center; padding: 20px;">
-                         No se pudo conectar con el servidor. Verifica tu conexión.
-                    </p>`;
-            });
+
+            // Intentar cargar reservas pero no bloquear si falla
+            setTimeout(() => {
+                cargarReservas().catch(() => {
+                    const lista = document.getElementById("reservasList");
+                    if (lista) {
+                        lista.innerHTML = `
+                            <p style="color: #e67e22; text-align: center; padding: 20px;">
+                                ⚠️ No se pudo conectar con el servidor. Verifica tu conexión.
+                            </p>`;
+                    }
+                });
+            }, 100);
         } else {
             localStorage.removeItem("token");
             mostrarLogin();
         }
     }
 });
-
-
-
-

@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("./user"); // tu modelo de usuario
+const User = require("./user");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -31,21 +31,28 @@ const reservaSchema = new mongoose.Schema({
     cancha: String,
     fecha: String,
     hora: String,
-    userId: { type: String, required: true } // Usuario que creó la reserva
-});
+    userId: { type: String, required: true }
+}, { timestamps: true });
+
 const Reserva = mongoose.model("Reserva", reservaSchema);
 
 // 🔹 Middleware de autenticación
 const authMiddleware = (req, res, next) => {
-    const authHeader = req.headers.authorization; // se espera "Bearer <token>"
-    if (!authHeader) return res.status(401).json({ error: "No autorizado" });
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ error: "No autorizado - Token no proporcionado" });
+    }
 
     const token = authHeader.split(" ")[1];
+
     try {
-        req.user = jwt.verify(token, JWT_SECRET); // contiene id y name
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; // contiene id y name
         next();
-    } catch {
-        res.status(401).json({ error: "Token inválido" });
+    } catch (err) {
+        console.error("Error al verificar token:", err.message);
+        return res.status(401).json({ error: "Token inválido o expirado" });
     }
 };
 
@@ -53,31 +60,54 @@ const authMiddleware = (req, res, next) => {
 // ✅ RUTAS
 // =====================================================
 
-// 🔸 Verificar token (para mantener la sesión activa)
+// 🔸 Verificar token (devuelve el nombre del usuario)
 app.get("/verify", authMiddleware, (req, res) => {
-    res.json({ ok: true, user: req.user });
+    res.json({
+        ok: true,
+        name: req.user.name,
+        id: req.user.id
+    });
 });
 
 // 🔸 Crear reserva (solo usuarios autenticados)
 app.post("/reservas", authMiddleware, async (req, res) => {
     try {
-        const { cancha, fecha, hora } = req.body;
+        const { nombre, email, telefono, cancha, fecha, hora } = req.body;
 
-        // Verificar si ya existe una reserva igual
+        // Validación de campos obligatorios
+        if (!nombre || !email || !cancha || !fecha || !hora) {
+            return res.status(400).json({
+                error: "Faltan campos obligatorios: nombre, email, cancha, fecha y hora"
+            });
+        }
+
+        // Verificar si ya existe una reserva para esa cancha en esa fecha/hora
         const reservaExistente = await Reserva.findOne({ cancha, fecha, hora });
         if (reservaExistente) {
             return res.status(400).json({
-                error: "Ya existe una reserva para esa cancha, fecha y hora.",
+                error: "Ya existe una reserva para esa cancha, fecha y hora."
             });
         }
 
         // Crear nueva reserva
-        const reserva = new Reserva({ ...req.body, userId: req.user.id });
+        const reserva = new Reserva({
+            nombre,
+            email,
+            telefono: telefono || "",
+            cancha,
+            fecha,
+            hora,
+            userId: req.user.id
+        });
+
         await reserva.save();
 
-        res.json({ mensaje: "Reserva guardada", reserva });
+        res.status(201).json({
+            mensaje: "Reserva guardada exitosamente",
+            reserva
+        });
     } catch (err) {
-        console.error(err);
+        console.error("Error al guardar reserva:", err);
         res.status(500).json({ error: "Error al guardar la reserva" });
     }
 });
@@ -85,10 +115,36 @@ app.post("/reservas", authMiddleware, async (req, res) => {
 // 🔸 Obtener reservas del usuario logueado
 app.get("/reservas", authMiddleware, async (req, res) => {
     try {
-        const reservas = await Reserva.find({ userId: req.user.id }).sort({ _id: -1 });
+        const reservas = await Reserva.find({ userId: req.user.id })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        console.log(`📋 Usuario ${req.user.name} tiene ${reservas.length} reservas`);
+
         res.json(reservas);
     } catch (err) {
+        console.error("Error al obtener reservas:", err);
         res.status(500).json({ error: "Error al obtener reservas" });
+    }
+});
+
+// 🔸 Eliminar reserva (opcional, por si lo necesitas)
+app.delete("/reservas/:id", authMiddleware, async (req, res) => {
+    try {
+        const reserva = await Reserva.findOne({
+            _id: req.params.id,
+            userId: req.user.id
+        });
+
+        if (!reserva) {
+            return res.status(404).json({ error: "Reserva no encontrada" });
+        }
+
+        await Reserva.deleteOne({ _id: req.params.id });
+        res.json({ mensaje: "Reserva eliminada" });
+    } catch (err) {
+        console.error("Error al eliminar reserva:", err);
+        res.status(500).json({ error: "Error al eliminar reserva" });
     }
 });
 
@@ -96,21 +152,39 @@ app.get("/reservas", authMiddleware, async (req, res) => {
 app.post("/register", async (req, res) => {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password)
+    if (!name || !email || !password) {
         return res.status(400).json({ error: "Todos los campos son obligatorios" });
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Email inválido" });
+    }
+
+    // Validar contraseña
+    if (password.length < 6) {
+        return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres" });
+    }
 
     try {
-        const existingUser = await User.findOne({ email });
-        if (existingUser)
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser) {
             return res.status(400).json({ error: "El usuario ya existe" });
+        }
 
         const passwordHash = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, email, passwordHash });
+        const newUser = new User({
+            name: name.trim(),
+            email: email.toLowerCase(),
+            passwordHash
+        });
         await newUser.save();
 
-        res.json({ mensaje: "Usuario registrado correctamente" });
+        console.log(`✅ Usuario registrado: ${email}`);
+        res.status(201).json({ mensaje: "Usuario registrado correctamente" });
     } catch (err) {
-        console.error(err);
+        console.error("Error al registrar usuario:", err);
         res.status(500).json({ error: "Error al registrar usuario" });
     }
 });
@@ -119,22 +193,53 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email y contraseña son obligatorios" });
+    }
+
     try {
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
+        const user = await User.findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(400).json({ error: "Usuario no encontrado" });
+        }
 
         const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return res.status(400).json({ error: "Contraseña incorrecta" });
+        if (!valid) {
+            return res.status(400).json({ error: "Contraseña incorrecta" });
+        }
 
-        const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, { expiresIn: "1h" });
-        res.json({ token, name: user.name });
+        const token = jwt.sign(
+            { id: user._id.toString(), name: user.name },
+            JWT_SECRET,
+            { expiresIn: "24h" } // Extendido a 24 horas
+        );
+
+        console.log(`✅ Login exitoso: ${user.email}`);
+        res.json({
+            token,
+            name: user.name,
+            id: user._id
+        });
     } catch (err) {
-        console.error(err);
+        console.error("Error en login:", err);
         res.status(500).json({ error: "Error en el servidor" });
     }
+});
+
+// 🔸 Ruta raíz (opcional)
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+    res.status(404).json({ error: "Ruta no encontrada" });
 });
 
 // =====================================================
 // ✅ Servidor
 // =====================================================
-app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`📁 Sirviendo archivos desde: ${__dirname}`);
+});
