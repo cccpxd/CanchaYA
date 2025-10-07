@@ -42,8 +42,3 @@ Para ver tus reservas activas o pasadas, haz clic en el botón **“Mis Reservas
 
 * Asegúrate de iniciar sesión antes de intentar realizar una reserva.
 * Solo los usuarios registrados pueden acceder a la sección de reservas.
-
----
-
-¿Quieres que le agregue una sección final con los **autores del proyecto** o **tecnologías utilizadas** (por ejemplo, HTML, CSS, JavaScript, Node.js, MongoDB)? Así quedaría más completo.
-
