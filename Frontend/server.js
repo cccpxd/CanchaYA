@@ -136,3 +136,24 @@ app.post("/register", async (req, res) => {
         res.status(500).json({ error: "Error al registrar usuario" });
     }
 });
+const app = express();
+app.use(express.json());
+
+// 🔒 Middleware para verificar token
+function authMiddleware(req, res, next) {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Token faltante" });
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "clave_secreta");
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(401).json({ error: "Token inválido" });
+    }
+}
+
+// ✅ Endpoint para verificar si el token es válido
+app.get("/verify", authMiddleware, (req, res) => {
+    res.json({ valid: true, user: req.user });
+});
