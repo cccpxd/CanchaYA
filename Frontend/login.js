@@ -215,21 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-function mostrarContenido(usuario) {
-  document.getElementById("authForms").style.display = "none";
-  document.getElementById("welcome").style.display = "block";
-  document.getElementById("userName").textContent = usuario;
-  document.getElementById("protectedContent").style.display = "block";
-  document.getElementById("navLinks").style.display = "flex";
-}
 
-function logout() {
-  localStorage.removeItem("usuario");
-  document.getElementById("authForms").style.display = "flex";
-  document.getElementById("welcome").style.display = "none";
-  document.getElementById("protectedContent").style.display = "none";
-  document.getElementById("navLinks").style.display = "none";
-}
 
 document.addEventListener("DOMContentLoaded", () => {
   const usuario = localStorage.getItem("usuario");
