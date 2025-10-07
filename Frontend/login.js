@@ -112,7 +112,7 @@ loginForm?.addEventListener("submit", async (e) => {
             loginForm.reset();
 
             // Cargar contenido protegido
-            cargarReservas();
+            await cargarReservas();
 
         } else {
             //  Si el servidor devolvió error, aseguramos limpiar eso
@@ -217,22 +217,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
-  const usuario = localStorage.getItem("usuario");
-  if (usuario) mostrarContenido(usuario);
-  
-  document.getElementById("loginForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = document.getElementById("emailLogin").value;
-    localStorage.setItem("usuario", email);
-    mostrarContenido(email);
-  });
-
-  document.getElementById("registerForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const nombre = document.getElementById("nameRegister").value;
-    localStorage.setItem("usuario", nombre);
-    mostrarContenido(nombre);
-  });
-});
 
