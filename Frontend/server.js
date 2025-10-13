@@ -152,6 +152,51 @@ app.delete("/reservas/:id", authMiddleware, async (req, res) => {
     }
 });
 
+
+const nodemailer = require("nodemailer");
+
+// Ruta para recibir y reenviar mensajes del formulario de contacto
+app.post("/api/enviar-correo", async (req, res) => {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+        return res.status(400).json({ error: "Faltan datos obligatorios." });
+    }
+
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail", // o usa smtp si es otro proveedor
+            auth: {
+                user: process.env.CORREO, // tu correo
+                pass: process.env.PASS    // contraseña o app password
+            }
+        });
+
+        const mailOptions = {
+            from: `"Cancha Ya Soporte" <${process.env.CORREO}>`,
+            to: process.env.CORREO, // correo donde recibes las reseñas
+            subject: `Nuevo mensaje de soporte - ${name}`,
+            text: `
+      📩 Nuevo mensaje de soporte:
+
+      👤 Nombre: ${name}
+      📧 Correo: ${email}
+
+      📝 Mensaje:
+      ${message}
+      `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({ ok: true, mensaje: "Correo enviado correctamente" });
+    } catch (error) {
+        console.error("Error al enviar correo:", error);
+        res.status(500).json({ error: "Error al enviar el correo" });
+    }
+});
+
+
 // 🔸 Registro de usuario
 app.post("/register", async (req, res) => {
     const { name, email, password } = req.body;

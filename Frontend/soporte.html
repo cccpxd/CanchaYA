@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⚽ Soporte al Cliente - Cancha Ya</title>
+    <style>
+        /* --- Tus estilos originales --- */
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#0a3d0a,#145214,#0a3d0a);color:#fff;min-height:100vh;display:flex;flex-direction:column;}
+        header{text-align:center;background-color:rgba(0,0,0,0.7);padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.5);}
+        .header-content{display:flex;align-items:center;justify-content:center;gap:15px;}
+        .logo{width:50px;height:50px;background-color:#4CAF50;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;}
+        header h1{font-size:2em;font-weight:bold;letter-spacing:1px;}
+        main{max-width:800px;margin:40px auto;background-color:rgba(0,0,0,0.6);border-radius:15px;padding:35px;box-shadow:0 4px 15px rgba(0,0,0,0.4);width:90%;}
+        h2{border-bottom:2px solid #4CAF50;padding-bottom:10px;margin-bottom:20px;font-size:1.5em;}
+        .faq{margin-bottom:40px;}
+        .faq-item{background-color:#2e7d32;border-radius:10px;margin-bottom:15px;overflow:hidden;transition:all .3s ease;cursor:pointer;}
+        .faq-item:hover{background-color:#388e3c;transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.3);}
+        .faq-question{padding:15px 20px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;user-select:none;}
+        .faq-question::after{content:'▼';font-size:.8em;transition:transform .3s ease;}
+        .faq-item.active .faq-question::after{transform:rotate(180deg);}
+        .faq-answer{max-height:0;overflow:hidden;background-color:rgba(0,0,0,0.4);transition:max-height .4s ease,padding .4s ease;}
+        .faq-answer p{margin:0;font-size:.95em;line-height:1.6em;}
+        .faq-item.active .faq-answer{max-height:200px;padding:15px 20px;}
+        form{display:flex;flex-direction:column;gap:15px;}
+        input,textarea{padding:12px 15px;border:none;border-radius:8px;font-size:1em;background-color:rgba(255,255,255,0.95);color:#000;transition:box-shadow .3s ease;}
+        input:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px rgba(76,175,80,0.3);}
+        textarea{resize:vertical;min-height:120px;}
+        button{background-color:#4CAF50;color:white;padding:14px;border:none;border-radius:8px;cursor:pointer;font-size:1em;font-weight:bold;transition:all .3s ease;}
+        button:hover{background-color:#43a047;transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.3);}
+        #response{margin-top:15px;padding:12px;font-weight:bold;color:#a5d6a7;background-color:rgba(76,175,80,0.2);border-radius:8px;text-align:center;display:none;}
+        #response.show{display:block;animation:fadeIn .5s ease;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+        .back-btn{display:inline-block;margin-top:20px;color:#fff;text-decoration:none;background-color:#2e7d32;padding:12px 24px;border-radius:8px;transition:all .3s ease;font-weight:bold;}
+        .back-btn:hover{background-color:#43a047;transform:translateX(-5px);}
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <div class="logo">⚽</div>
+        <h1>Soporte al Cliente - Cancha Ya</h1>
+    </div>
+</header>
+
+<main>
+    <section class="faq">
+        <h2>Preguntas Frecuentes</h2>
+        <div class="faq-item"><div class="faq-question">¿Cómo puedo reservar una cancha?</div><div class="faq-answer"><p>Ingresa a la página principal, selecciona tu ciudad, elige la cancha y horario disponible, y confirma la reserva con tus datos.</p></div></div>
+        <div class="faq-item"><div class="faq-question">¿Qué métodos de pago aceptan?</div><div class="faq-answer"><p>Aceptamos pagos con tarjeta de crédito, débito, transferencias bancarias y Nequi.</p></div></div>
+        <div class="faq-item"><div class="faq-question">¿Puedo cancelar o cambiar mi reserva?</div><div class="faq-answer"><p>Sí, puedes cancelar o modificar tu reserva hasta 24 horas antes del horario reservado desde tu perfil en la plataforma.</p></div></div>
+        <div class="faq-item"><div class="faq-question">¿Tienen aplicación móvil?</div><div class="faq-answer"><p>Estamos trabajando en el desarrollo de nuestra app móvil. Pronto estará disponible para Android e iOS.</p></div></div>
+    </section>
+
+    <section class="contact">
+        <h2>Contáctanos</h2>
+        <form id="contactForm">
+            <input type="text" id="name" placeholder="Tu nombre" required />
+            <input type="email" id="email" placeholder="Tu correo electrónico" required />
+            <textarea id="message" placeholder="Escribe tu mensaje aquí..." required></textarea>
+            <button type="submit">Enviar Mensaje</button>
+        </form>
+        <p id="response"></p>
+        <a href="index.html" class="back-btn">⬅ Volver a Cancha Ya</a>
+    </section>
+</main>
+
+<script>
+    // FAQ desplegable
+    document.querySelectorAll(".faq-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const wasActive = item.classList.contains("active");
+            document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("active"));
+            if (!wasActive) item.classList.add("active");
+        });
+    });
+
+    // Envío del formulario al backend
+    const form = document.getElementById("contactForm");
+    const response = document.getElementById("response");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const data = {
+            name: document.getElementById("name").value,
+            email: document.getElementById("email").value,
+            message: document.getElementById("message").value
+        };
+
+        try {
+            const res = await fetch("/api/enviar-correo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                response.textContent = "✅ ¡Mensaje enviado correctamente! Pronto te responderemos.";
+            } else {
+                response.textContent = "⚠️ Error al enviar el mensaje: " + (result.error || "Inténtalo más tarde.");
+            }
+        } catch (error) {
+            response.textContent = "❌ Error de conexión con el servidor.";
+        }
+
+        response.classList.add("show");
+        form.reset();
+        setTimeout(() => response.classList.remove("show"), 5000);
+    });
+</script>
+</body>
+</html>
