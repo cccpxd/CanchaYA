@@ -21,6 +21,10 @@ mongoose.connect(process.env.MONGO_URL)
 // 🔹 Middleware
 app.use(cors());
 app.use(bodyParser.json());
+// 🔸 Ruta raíz (opcional)
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public.html"));
+});
 app.use(express.static(path.join(__dirname)));
 
 // 🔹 Modelo de reserva
@@ -226,10 +230,7 @@ app.post("/login", async (req, res) => {
     }
 });
 
-// 🔸 Ruta raíz (opcional)
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public.html"));
-});
+
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {
