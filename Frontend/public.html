@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanchaYa - Reserva tu Cancha de Fútbol</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+    <nav>
+        <div class="logo"><img src="img/logo.png" alt="CanchaYa Logo"></div>
+        <ul class="nav-links" id="navLinks" >
+            <li><a href="#reservar">Reservar</a></li>
+            <li><a href="#canchas">Canchas</a></li>
+            <li><a href="#reservaUsuario">Mis Reservas</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+            <li><a href="index.html" class="login-btn">Iniciar sesión</a></li>
+
+        </ul>
+    </nav>
+
+
+        <!-- BIENVENIDA POST LOGIN -->
+        <div id="welcome" style="display:none;">
+            <h3>¡Bienvenido <span id="userName"></span>!</h3>
+            <button class="btn" onclick="logout()">Cerrar sesión</button>
+        </div>
+
+</header>
+
+
+    <!-- SECCIÓN HERO -->
+    <section class="hero" id="inicio">
+        <h1>Reserva tu cancha de fútbol</h1>
+        <p>La forma más fácil y rápida de encontrar y reservar canchas cerca de ti.</p>
+    </section>
+
+    <div class="container">
+        <!-- FORMULARIO RESERVA -->
+        <section class="booking-section" id="reservar">
+            <h2>Inicia sesión antes de hacer una reserva <br></h2>
+            <h2>Hacer una Reserva</h2>
+            <form class="booking-form" id="bookingForm">
+                <div class="form-group">
+                    <label for="nombreReserva">Nombre Completo</label>
+                    <input type="text" id="nombreReserva" required>
+                </div>
+                <div class="form-group">
+                    <label for="emailReserva">Email</label>
+                    <input type="email" id="emailReserva" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefonoReserva">Teléfono</label>
+                    <input type="tel" id="telefonoReserva" required>
+                </div>
+                <div class="form-group">
+                    <label for="cancha">Selecciona una cancha</label>
+                    <select id="cancha" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="futbol5">Cancha de fútbol 5</option>
+                        <option value="futbol7">Cancha de fútbol 7</option>
+                        <option value="futbol11">Cancha de fútbol 11</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <script>
+                    // Obtener la fecha actual en formato YYYY-MM-DD
+                    const hoy = new Date().toISOString().split("T")[0];
+
+                    // Establecer la fecha mínima en el input
+                    document.getElementById("fecha").setAttribute("min", hoy);
+                </script>
+
+
+                <div class="form-group">
+                    <label for="hora">Hora</label>
+                    <select id="hora" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="08:00">08:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                        <option value="20:00">08:00 PM</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Confirmar reserva</button>
+            </form>
+        </section>
+
+        <!-- SECCIÓN CANCHAS -->
+        <section id="canchas">
+            <h2>Nuestras canchas</h2>
+            <div class="canchas-grid">
+                <div class="cancha-card">
+                    <div class="cancha-image">
+                        <img src="img/cancha5.jpg" alt="Cancha Fútbol 5">
+                    </div>
+                    <div class="cancha-info">
+                        <h3>Cancha de fútbol 5</h3>
+                        <p>Césped sintético de alta calidad</p>
+                        <div class="price">$30/hora</div>
+                    </div>
+                </div>
+
+                <div class="cancha-card">
+                    <div class="cancha-image">
+                        <img src="img/cancha7.jpg" alt="Cancha Fútbol 7">
+                    </div>
+                    <div class="cancha-info">
+                        <h3>Cancha de fútbol 7</h3>
+                        <p>Césped natural bien mantenido</p>
+                        <div class="price">$50/hora</div>
+                    </div>
+                </div>
+
+                <div class="cancha-card">
+                    <div class="cancha-image">
+                        <img src="img/cancha11.jpg" alt="Cancha Fútbol 11">
+                    </div>
+                    <div class="cancha-info">
+                        <h3>Cancha de fútbol 11</h3>
+                        <p>Cancha profesional reglamentaria</p>
+                        <div class="price">$80/hora</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- LISTA DE RESERVAS -->
+        <section id = "reservaUsuario"
+                 class="reservations-list">
+            <h2>Mis Reservas</h2>
+            <div id="reservasList">
+                <p>No hay reservas aún. ¡Haz tu primera reserva!</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer id="contacto">
+        <h3>CanchaYa</h3>
+        <p>📍 Cl.3a #8a-21, Yumbo, Valle del Cauca, Colombia</p>
+        <p>Telefono: 📞 +57 304 5212374  </p>
+        <p>✉️ yexvez@gmail.com</p>
+        <p style="margin-top: 1rem; color: #999;">© 2025 CanchaYa. Todos los derechos reservados.</p>
+    </footer>
+
+
+
+</body>
+</html>

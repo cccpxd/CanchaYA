@@ -225,10 +225,10 @@ app.post("/login", async (req, res) => {
         res.status(500).json({ error: "Error en el servidor" });
     }
 });
-
+g
 // 🔸 Ruta raíz (opcional)
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
+    res.sendFile(path.join(__dirname, "public.html"));
 });
 
 // Manejo de rutas no encontradas
