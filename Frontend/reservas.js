@@ -6,13 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!bookingForm || !user) return;
 
-    // Cargar reservas del usuario al iniciar
     cargarReservas();
-
-    // Limpiar reservas expiradas en el servidor
     fetch("/api/reservas/expired", { method: "DELETE" });
 
-    // Evento para crear reserva
     bookingForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -40,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Función para cargar reservas del usuario
     async function cargarReservas() {
         const email = user.email;
         const resp = await fetch(`/api/reservas?email=${encodeURIComponent(email)}`);
@@ -66,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
             reservasList.appendChild(item);
         });
 
-        // Vincular los botones de cancelar
         document.querySelectorAll(".btn[data-id]").forEach(btn => {
             btn.addEventListener("click", async () => {
                 const id = btn.getAttribute("data-id");

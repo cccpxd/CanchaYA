@@ -239,6 +239,53 @@ app.use((req, res) => {
 // =====================================================
 // ✅ Servidor
 // =====================================================
+
+
+// =======================
+// GESTIÓN DE RESERVAS
+// =======================
+
+let reservas = [];
+
+// Crear una reserva
+app.post("/api/reservas", (req, res) => {
+    const reserva = {
+        id: Date.now().toString(),
+        ...req.body,
+    };
+    reservas.push(reserva);
+    res.status(201).json(reserva);
+});
+
+// Obtener reservas por usuario
+app.get("/api/reservas", (req, res) => {
+    const { email } = req.query;
+    const userReservas = reservas.filter(r => r.email === email);
+    res.json(userReservas);
+});
+
+// Eliminar reserva específica
+app.delete("/api/reservas/:id", (req, res) => {
+    const { id } = req.params;
+    const originalLength = reservas.length;
+    reservas = reservas.filter(r => r.id !== id);
+    if (reservas.length < originalLength) {
+        res.json({ message: "Reserva eliminada correctamente" });
+    } else {
+        res.status(404).json({ error: "Reserva no encontrada" });
+    }
+});
+
+// Eliminar reservas vencidas
+app.delete("/api/reservas/expired", (req, res) => {
+    const hoy = new Date();
+    const antes = reservas.length;
+    reservas = reservas.filter(r => new Date(r.fecha) >= hoy);
+    const eliminadas = antes - reservas.length;
+    res.json({ eliminadas });
+});
+
+
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     console.log(`📁 Sirviendo archivos desde: ${__dirname}`);
