@@ -276,3 +276,11 @@ footer {
     color: #333;
 }
 
+.reserva-card button {
+  transition: all 0.3s ease;
+}
+.reserva-card button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4);
+}
+
