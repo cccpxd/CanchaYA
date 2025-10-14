@@ -302,7 +302,7 @@ async function cargarReservas() {
             lista.innerHTML = reservas.map((r, index) => {
                 console.log(`  Reserva ${index + 1}:`, r);
                 return `
-                <div class="reserva-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 15px 0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: white; position: relative;">
+                <div class="reserva-card" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 20px; margin: 15px 0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: white; position: relative;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                         <strong style="font-size: 1.3em;">${r.nombre || 'Sin nombre'}</strong>
                         <span style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 15px; font-size: 0.9em;">
