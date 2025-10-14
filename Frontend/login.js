@@ -44,8 +44,9 @@ function mostrarApp(userName) {
     // Actualizar nombre de usuario
     if (userNameEl && userName) {
         userNameEl.textContent = userName;
+        console.log("✅ Nombre actualizado en UI:", userName);
     } else {
-        console.warn("⚠️ No se pudo actualizar el nombre. userName element:", userNameEl, "userName:", userName);
+        console.warn("⚠ No se pudo actualizar el nombre. userName element:", userNameEl, "userName:", userName);
     }
 }
 
@@ -142,7 +143,7 @@ if (loginForm) {
                 // Limpiar formulario
                 loginForm.reset();
 
-                // Mostrar interfaz
+                // Mostrar interfaz (sin delay, el browser ya está listo)
                 mostrarApp(data.name);
 
                 // Pequeño delay para asegurar que el DOM se actualizó
@@ -245,39 +246,23 @@ async function cargarReservas() {
                 </p>`;
         } else {
             console.log("🎨 Renderizando", reservas.length, "reservas...");
-            lista.innerHTML = reservas
-                .filter(r => {
-                    // comparación de fechas
-                    try {
-                        const hoy = new Date();
-                        const fechaReserva = new Date(r.fecha + "T00:00:00");
-                        return fechaReserva >= new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-                    } catch {
-                        return true;
-                    }
-                })
-                .map((r, index) => {
-                    console.log(`  Reserva ${index + 1}:`, r);
-                    return `
-                    <div class="reserva-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 15px 0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: white; position: relative;">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                            <strong style="font-size: 1.3em;">${r.nombre || 'Sin nombre'}</strong>
-                            <span style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 15px; font-size: 0.9em;">
-                                ${r.cancha || 'Sin cancha'}
-                            </span>
-                        </div>
-                        <div style="font-size: 1.05em; opacity: 0.95; margin-top: 10px;">
-                            📅 ${r.fecha || 'Sin fecha'} • ⏰ ${r.hora || 'Sin hora'}
-                        </div>
-                        ${r.telefono ? `<div style="margin-top: 8px; opacity: 0.9;">📞 ${r.telefono}</div>` : ''}
-                        ${r.email ? `<div style="margin-top: 5px; opacity: 0.9;">✉️ ${r.email}</div>` : ''}
-                        <button onclick="cancelarReserva('${r._id}')" 
-                            style="margin-top: 15px; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); 
-                            color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
-                            🗑️ Cancelar
-                        </button>
-                    </div>`;
-                }).join("");
+            lista.innerHTML = reservas.map((r, index) => {
+                console.log(`  Reserva ${index + 1}:`, r);
+                return `
+                <div class="reserva-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 15px 0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <strong style="font-size: 1.3em;">${r.nombre || 'Sin nombre'}</strong>
+                        <span style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 15px; font-size: 0.9em;">
+                            ${r.cancha || 'Sin cancha'}
+                        </span>
+                    </div>
+                    <div style="font-size: 1.05em; opacity: 0.95; margin-top: 10px;">
+                        📅 ${r.fecha || 'Sin fecha'} • ⏰ ${r.hora || 'Sin hora'}
+                    </div>
+                    ${r.telefono ? `<div style="margin-top: 8px; opacity: 0.9;">📞 ${r.telefono}</div>` : ''}
+                    ${r.email ? `<div style="margin-top: 5px; opacity: 0.9;">✉️ ${r.email}</div>` : ''}
+                </div>
+            `}).join("");
             console.log("✅ Reservas renderizadas exitosamente");
         }
 
@@ -375,36 +360,6 @@ if (bookingForm) {
 } else {
     console.warn("⚠️ bookingForm no encontrado en el DOM");
 }
-
-// --- CANCELAR RESERVA ---
-async function cancelarReserva(id) {
-    const token = localStorage.getItem("token");
-    if (!token) return alert("⚠️ Debes iniciar sesión primero");
-
-    if (!confirm("¿Deseas cancelar esta reserva?")) return;
-
-    try {
-        const res = await fetch(`${API_BASE}reservas/${id}`, {
-            method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            alert("🗑️ " + (data.mensaje || "Reserva cancelada correctamente"));
-            await cargarReservas();
-        } else {
-            alert("❌ " + (data.error || "Error al cancelar la reserva"));
-        }
-    } catch (err) {
-        console.error("❌ Error al cancelar reserva:", err);
-        alert("❌ Error de conexión al cancelar la reserva");
-    }
-}
-window.cancelarReserva = cancelarReserva;
 
 // --- VALIDAR TOKEN AL INICIAR ---
 document.addEventListener("DOMContentLoaded", async () => {
