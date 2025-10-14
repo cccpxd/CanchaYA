@@ -1,5 +1,5 @@
 # ⚽ CanchaYa – Sistema de Reservación de Canchas de Fútbol
-Link de la pagina: https://canchaya-production.up.railway.app/
+Link de la pagina: https://pruebas-production-31c6.up.railway.app/
 **CanchaYa** es una página web diseñada para facilitar la reservación de canchas de fútbol de diferentes tamaños, permitiendo a los usuarios registrarse, iniciar sesión y gestionar sus reservas de forma rápida y sencilla.
 
 ---
