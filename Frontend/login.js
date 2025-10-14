@@ -315,27 +315,27 @@ async function cargarReservas() {
                     ${r.telefono ? `<div style="margin-top: 8px; opacity: 0.9;">📞 ${r.telefono}</div>` : ''}
                     ${r.email ? `<div style="margin-top: 5px; opacity: 0.9;">✉️ ${r.email}</div>` : ''}
                     
-                    <button 
-                        onclick="cancelarReserva('${r._id}', '${(r.cancha || 'esta reserva').replace(/'/g, "\\'")}')"
-                        style="
-                            margin-top: 15px;
-                            padding: 10px 20px;
-                            background: rgba(231, 76, 60, 0.9);
-                            color: white;
-                            border: none;
-                            border-radius: 8px;
-                            font-size: 1rem;
-                            font-weight: 600;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                        "
-                        onmouseover="this.style.background='rgba(192, 57, 43, 1)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';"
-                        onmouseout="this.style.background='rgba(231, 76, 60, 0.9)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)';"
-                    >
-                        🗑️ Cancelar Reserva
-                    </button>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                        <button 
+                            onclick="cancelarReserva('${r._id}', '${(r.cancha || 'esta reserva').replace(/'/g, "\\'")}')"
+                            style="
+                                padding: 5px 10px;
+                                background: rgba(255, 255, 255, 0.2);
+                                color: white;
+                                border: none;
+                                border-radius: 15px;
+                                font-size: 0.9em;
+                                font-weight: 500;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            "
+                            onmouseover="this.style.background='rgba(231, 76, 60, 0.9)'; this.style.transform='scale(1.05)';"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='scale(1)';"
+                        >
+                            🗑️ Cancelar
+                        </button>
+                    </div>
                 </div>
             `}).join("");
             console.log("✅ Reservas renderizadas exitosamente");
