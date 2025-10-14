@@ -46,14 +46,14 @@ function mostrarApp(userName) {
         userNameEl.textContent = userName;
         console.log("✅ Nombre actualizado en UI:", userName);
     } else {
-        console.warn("⚠️ No se pudo actualizar el nombre. userName element:", userNameEl, "userName:", userName);
+        console.warn("⚠ No se pudo actualizar el nombre. userName element:", userNameEl, "userName:", userName);
     }
 }
 
 // --- CANCELAR RESERVA ---
 async function cancelarReserva(reservaId, nombreCancha) {
     // Confirmación del usuario
-    const confirmar = confirm(`¿Estás seguro de cancelar la reserva de "${nombreCancha}"?\n\nEsta acción no se puede deshacer.`);
+    const confirmar = confirm(¿Estás seguro de cancelar la reserva de "${nombreCancha}"?\n\nEsta acción no se puede deshacer.);
     
     if (!confirmar) {
         console.log("❌ Cancelación abortada por el usuario");
@@ -62,18 +62,18 @@ async function cancelarReserva(reservaId, nombreCancha) {
 
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("⚠️ Debes iniciar sesión para cancelar reservas");
+        alert("⚠ Debes iniciar sesión para cancelar reservas");
         mostrarLogin();
         return;
     }
 
-    console.log("🗑️ Cancelando reserva:", reservaId);
+    console.log("🗑 Cancelando reserva:", reservaId);
 
     try {
-        const res = await fetch(`${API_BASE}reservas/${reservaId}`, {
+        const res = await fetch(${API_BASE}reservas/${reservaId}, {
             method: "DELETE",
             headers: {
-                "Authorization": `Bearer ${token}`,
+                "Authorization": Bearer ${token},
                 "Content-Type": "application/json"
             }
         });
@@ -89,7 +89,7 @@ async function cancelarReserva(reservaId, nombreCancha) {
             localStorage.removeItem("token");
             localStorage.removeItem("userName");
             mostrarLogin();
-            alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
+            alert("⚠ Sesión expirada. Por favor, inicia sesión nuevamente.");
         } else {
             alert("❌ " + (data.error || "Error al cancelar reserva"));
         }
@@ -123,13 +123,13 @@ if (registerForm) {
         const password = passwordInput.value;
 
         if (!name || !email || !password) {
-            return alert("⚠️ Todos los campos son obligatorios");
+            return alert("⚠ Todos los campos son obligatorios");
         }
 
         console.log("📤 Intentando registrar:", email);
 
         try {
-            const res = await fetch(`${API_BASE}register`, {
+            const res = await fetch(${API_BASE}register, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, email, password })
@@ -169,13 +169,13 @@ if (loginForm) {
         const password = passwordInput.value.trim();
 
         if (!email || !password) {
-            return alert("⚠️ Email y contraseña son obligatorios");
+            return alert("⚠ Email y contraseña son obligatorios");
         }
 
         console.log("📤 Intentando login para:", email);
 
         try {
-            const res = await fetch(`${API_BASE}login`, {
+            const res = await fetch(${API_BASE}login, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
@@ -218,7 +218,7 @@ if (loginForm) {
         }
     });
 } else {
-    console.warn("⚠️ loginForm no encontrado en el DOM");
+    console.warn("⚠ loginForm no encontrado en el DOM");
 }
 
 // --- LOGOUT ---
@@ -258,10 +258,10 @@ async function cargarReservas() {
     console.log("📡 Solicitando reservas al servidor...");
 
     try {
-        const res = await fetch(`${API_BASE}reservas`, {
+        const res = await fetch(${API_BASE}reservas, {
             method: "GET",
             headers: {
-                "Authorization": `Bearer ${token}`,
+                "Authorization": Bearer ${token},
                 "Content-Type": "application/json"
             }
         });
@@ -274,11 +274,11 @@ async function cargarReservas() {
                 localStorage.removeItem("token");
                 localStorage.removeItem("userName");
                 mostrarLogin();
-                alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
+                alert("⚠ Sesión expirada. Por favor, inicia sesión nuevamente.");
                 return;
             } else {
                 const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.error || `Error ${res.status}`);
+                throw new Error(errorData.error || Error ${res.status});
             }
         }
 
@@ -312,28 +312,29 @@ async function cargarReservas() {
                     <div style="font-size: 1.05em; opacity: 0.95; margin-top: 10px;">
                         📅 ${r.fecha || 'Sin fecha'} • ⏰ ${r.hora || 'Sin hora'}
                     </div>
-                    ${r.telefono ? `<div style="margin-top: 8px; opacity: 0.9;">📞 ${r.telefono}</div>` : ''}
-                    ${r.email ? `<div style="margin-top: 5px; opacity: 0.9;">✉️ ${r.email}</div>` : ''}
+                    ${r.telefono ? <div style="margin-top: 8px; opacity: 0.9;">📞 ${r.telefono}</div> : ''}
+                    ${r.email ? <div style="margin-top: 5px; opacity: 0.9;">✉ ${r.email}</div> : ''}
                     
                     <button 
                         onclick="cancelarReserva('${r._id}', '${(r.cancha || 'esta reserva').replace(/'/g, "\\'")}')"
                         style="
                             margin-top: 15px;
                             padding: 10px 20px;
-                            background: rgba(255, 255, 255, 0.2);
+                            background: rgba(231, 76, 60, 0.9);
                             color: white;
                             border: none;
-                            border-radius: 15px;
+                            border-radius: 8px;
                             font-size: 1rem;
                             font-weight: 600;
                             cursor: pointer;
                             transition: all 0.3s ease;
                             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                         "
-                        onmouseover="this.style.background='rgba(231, 76, 60, 0.9)'; this.style.transform='scale(1.05)';"
-                        onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='scale(1)';"
+                        onmouseover="this.style.background='rgba(192, 57, 43, 1)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';"
+                        onmouseout="this.style.background='rgba(231, 76, 60, 0.9)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)';"
                     >
-                        🗑️ Cancelar Reserva
+                        🗑 Cancelar Reserva
                     </button>
                 </div>
             `}).join("");
@@ -366,7 +367,7 @@ if (bookingForm) {
 
         const token = localStorage.getItem("token");
         if (!token) {
-            alert("⚠️ Debes iniciar sesión primero");
+            alert("⚠ Debes iniciar sesión primero");
             mostrarLogin();
             return;
         }
@@ -394,17 +395,17 @@ if (bookingForm) {
 
         // Validación básica
         if (!reserva.nombre || !reserva.email || !reserva.cancha || !reserva.fecha || !reserva.hora) {
-            return alert("⚠️ Por favor completa todos los campos obligatorios");
+            return alert("⚠ Por favor completa todos los campos obligatorios");
         }
 
         console.log("📤 Enviando nueva reserva:", reserva);
 
         try {
-            const res = await fetch(`${API_BASE}reservas`, {
+            const res = await fetch(${API_BASE}reservas, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": Bearer ${token}
                 },
                 body: JSON.stringify(reserva)
             });
@@ -421,7 +422,7 @@ if (bookingForm) {
                 localStorage.removeItem("token");
                 localStorage.removeItem("userName");
                 mostrarLogin();
-                alert("⚠️ Sesión expirada. Por favor, inicia sesión nuevamente.");
+                alert("⚠ Sesión expirada. Por favor, inicia sesión nuevamente.");
             } else {
                 alert("❌ " + (data.error || "Error al guardar reserva"));
             }
@@ -432,13 +433,13 @@ if (bookingForm) {
         }
     });
 } else {
-    console.warn("⚠️ bookingForm no encontrado en el DOM");
+    console.warn("⚠ bookingForm no encontrado en el DOM");
 }
 
 // --- VALIDAR TOKEN AL INICIAR ---
 document.addEventListener("DOMContentLoaded", async () => {
     if (isInitialized) {
-        console.log("⚠️ Ya inicializado, evitando duplicación");
+        console.log("⚠ Ya inicializado, evitando duplicación");
         return;
     }
     isInitialized = true;
@@ -474,10 +475,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("📡 Verificando token con el servidor...");
 
     try {
-        const res = await fetch(`${API_BASE}verify`, {
+        const res = await fetch(${API_BASE}verify, {
             method: "GET",
             headers: {
-                "Authorization": `Bearer ${token}`,
+                "Authorization": Bearer ${token},
                 "Content-Type": "application/json"
             }
         });
@@ -503,7 +504,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 await cargarReservas();
             }, 200);
         } else {
-            console.warn("⚠️ Token inválido o expirado (status:", res.status + ")");
+            console.warn("⚠ Token inválido o expirado (status:", res.status + ")");
             localStorage.removeItem("token");
             localStorage.removeItem("userName");
             mostrarLogin();
@@ -522,7 +523,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     if (lista) {
                         lista.innerHTML = `
                             <p style="color: #e67e22; text-align: center; padding: 30px;">
-                                ⚠️ No se pudo conectar con el servidor.<br>
+                                ⚠ No se pudo conectar con el servidor.<br>
                                 <small style="display: block; margin-top: 10px; color: #999;">
                                     Verifica tu conexión a internet
                                 </small>
