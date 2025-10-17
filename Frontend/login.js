@@ -46,7 +46,7 @@ function mostrarApp(userName) {
         userNameEl.textContent = userName;
         console.log("✅ Nombre actualizado en UI:", userName);
     } else {
-        console.warn("⚠️ No se pudo actualizar el nombre. userName element:", userNameEl, "userName:", userName);
+        console.warn("⚠ No se pudo actualizar el nombre. userName element:", userNameEl, "userName:", userName);
     }
 }
 
