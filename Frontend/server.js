@@ -331,6 +331,73 @@ app.delete("/api/reservas/expired", (req, res) => {
     res.json({ eliminadas });
 });
 
+// =======================
+// MODELOS DE TORNEO Y EQUIPO
+// =======================
+
+const torneoSchema = new mongoose.Schema({
+    nombre: String,
+    descripcion: String,
+    fechaInicio: String,
+    equipos: [
+        {
+            nombre: String,
+            jugadores: [String],
+            contacto: String,
+            email: String,
+            creado: { type: Date, default: Date.now }
+        }
+    ]
+});
+
+const Torneo = mongoose.model("Torneo", torneoSchema);
+
+// =======================
+// RUTAS DE TORNEOS
+// =======================
+
+// Crear torneo
+app.post("/api/torneos", async (req, res) => {
+    try {
+        const { nombre, descripcion, fechaInicio } = req.body;
+        const torneo = new Torneo({ nombre, descripcion, fechaInicio, equipos: [] });
+        await torneo.save();
+        res.status(201).json(torneo);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al crear el torneo" });
+    }
+});
+
+// Obtener todos los torneos
+app.get("/api/torneos", async (req, res) => {
+    try {
+        const torneos = await Torneo.find().lean();
+        res.json(torneos);
+    } catch (err) {
+        res.status(500).json({ error: "Error al obtener los torneos" });
+    }
+});
+
+// Agregar equipo a un torneo
+app.post("/api/torneos/:id/equipos", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, jugadores, contacto, email } = req.body;
+        const torneo = await Torneo.findById(id);
+        if (!torneo) return res.status(404).json({ error: "Torneo no encontrado" });
+
+        torneo.equipos.push({ nombre, jugadores, contacto, email });
+        await torneo.save();
+
+        res.status(201).json({ mensaje: "Equipo agregado correctamente", torneo });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al agregar el equipo" });
+    }
+});
+
+
 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
