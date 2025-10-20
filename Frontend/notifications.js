@@ -23,7 +23,7 @@ const NotificationManager = {
         const notifItem = document.createElement("li");
         notifItem.style.position = "relative";
         notifItem.innerHTML = `
-            <a href="#" id="notificationBtn" style="position: relative; display: flex; align-items: center; gap: 5px;">
+            <a href="#" id="notificationBtn" style="display: flex; align-items: center; gap: 5px; position: relative;">
                 Notificaciones
                 <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
             </a>
