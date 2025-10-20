@@ -856,3 +856,13 @@ footer {
         pointer-events: auto;
     }
 }
+#notificationBtn {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.nav-links li {
+    display: flex;
+    align-items: center;
+}
