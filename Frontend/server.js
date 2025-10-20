@@ -50,22 +50,7 @@ const reservaSchema = new mongoose.Schema({
 
 const Reserva = mongoose.model("Reserva", reservaSchema);
 
-const torneoSchema = new mongoose.Schema({
-  nombre: String,
-  descripcion: String,
-  fechaInicio: String,
-  equipos: [
-    {
-      nombre: String,
-      jugadores: [String],
-      contacto: String,
-      email: String,
-      creado: { type: Date, default: Date.now }
-    }
-  ]
-});
 
-const Torneo = mongoose.model("Torneo", torneoSchema);
 
 // =====================================================
 // 🔹 AUTENTICACIÓN
