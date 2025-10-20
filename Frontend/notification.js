@@ -29,7 +29,7 @@ const notificationSchema = new mongoose.Schema({
     },
     icono: {
         type: String,
-        default: '🔔'
+        default: ''
     },
     prioridad: {
         type: String,
