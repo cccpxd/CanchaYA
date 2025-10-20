@@ -14,7 +14,7 @@ const Notification = require("./notification");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const JWT_SECRET = process.env.MONGOTOKEN || "supersecreto123";
+const JWT_SECRET = process.env.MONGOTOKEN || "TOKENTOJEMONGODB";
 
 // =====================================================
 // 🔹 CONEXIÓN A MONGODB
@@ -283,41 +283,188 @@ app.delete("/reservas/:id", authMiddleware, async (req, res) => {
 // =====================================================
 // 🔹 RUTAS DE TORNEOS
 // =====================================================
+// Schema de Torneo
+const torneoSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  fechaInicio: { type: Date, required: true },
+  fechaFin: { type: Date, required: true },
+  numEquipos: { type: Number, required: true },
+  costo: { type: Number, required: true },
+  ubicacion: { type: String, required: true },
+  descripcion: { type: String, default: "" },
+  equiposInscritos: [
+    {
+      nombre: { type: String, required: true },
+      capitan: { type: String, required: true },
+      telefono: { type: String, required: true },
+      email: { type: String, required: true },
+      fechaInscripcion: { type: Date, default: Date.now },
+    },
+  ],
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Torneo = mongoose.model("Torneo", torneoSchema);
+
+// ========== RUTAS API ==========
+
+// Crear torneo
 app.post("/api/torneos", async (req, res) => {
   try {
-    const { nombre, descripcion, fechaInicio } = req.body;
-    const torneo = new Torneo({ nombre, descripcion, fechaInicio, equipos: [] });
+    const {
+      nombre,
+      fechaInicio,
+      fechaFin,
+      numEquipos,
+      costo,
+      ubicacion,
+      descripcion,
+    } = req.body;
+
+    // Validación de fechas
+    if (new Date(fechaFin) <= new Date(fechaInicio)) {
+      return res.status(400).json({
+        error: "La fecha de finalización debe ser posterior a la fecha de inicio",
+      });
+    }
+
+    const torneo = new Torneo({
+      nombre,
+      fechaInicio,
+      fechaFin,
+      numEquipos,
+      costo,
+      ubicacion,
+      descripcion,
+      equiposInscritos: [],
+    });
+
     await torneo.save();
-    res.status(201).json(torneo);
+    res.status(201).json({
+      mensaje: `¡Torneo "${nombre}" creado exitosamente!`,
+      torneo,
+    });
   } catch (err) {
+    console.error("Error al crear torneo:", err);
     res.status(500).json({ error: "Error al crear el torneo" });
   }
 });
 
+// Obtener todos los torneos
 app.get("/api/torneos", async (req, res) => {
   try {
-    const torneos = await Torneo.find().lean();
+    const torneos = await Torneo.find().sort({ createdAt: -1 }).lean();
     res.json(torneos);
   } catch (err) {
+    console.error("Error al obtener torneos:", err);
     res.status(500).json({ error: "Error al obtener torneos" });
   }
 });
 
-app.post("/api/torneos/:id/equipos", async (req, res) => {
+// Obtener un torneo específico
+app.get("/api/torneos/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, jugadores, contacto, email } = req.body;
     const torneo = await Torneo.findById(id);
-    if (!torneo) return res.status(404).json({ error: "Torneo no encontrado" });
 
-    torneo.equipos.push({ nombre, jugadores, contacto, email });
-    await torneo.save();
-    res.status(201).json({ mensaje: "Equipo agregado correctamente", torneo });
+    if (!torneo) {
+      return res.status(404).json({ error: "Torneo no encontrado" });
+    }
+
+    res.json(torneo);
   } catch (err) {
-    res.status(500).json({ error: "Error al agregar equipo" });
+    console.error("Error al obtener torneo:", err);
+    res.status(500).json({ error: "Error al obtener el torneo" });
   }
 });
 
+// Inscribir equipo en un torneo
+app.post("/api/torneos/:id/equipos", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, capitan, telefono, email } = req.body;
+
+    const torneo = await Torneo.findById(id);
+
+    if (!torneo) {
+      return res.status(404).json({ error: "Torneo no encontrado" });
+    }
+
+    // Verificar si hay cupos disponibles
+    if (torneo.equiposInscritos.length >= torneo.numEquipos) {
+      return res.status(400).json({ error: "No hay cupos disponibles" });
+    }
+
+    // Verificar si ya existe un equipo con ese nombre
+    const equipoExiste = torneo.equiposInscritos.some(
+        (e) => e.nombre.toLowerCase() === nombre.toLowerCase()
+    );
+
+    if (equipoExiste) {
+      return res.status(400).json({
+        error: "Ya existe un equipo con ese nombre en este torneo",
+      });
+    }
+
+    // Agregar equipo
+    const equipo = {
+      nombre,
+      capitan,
+      telefono,
+      email,
+      fechaInscripcion: new Date(),
+    };
+
+    torneo.equiposInscritos.push(equipo);
+    await torneo.save();
+
+    res.status(201).json({
+      mensaje: `¡Equipo "${nombre}" inscrito exitosamente!`,
+      torneo,
+    });
+  } catch (err) {
+    console.error("Error al inscribir equipo:", err);
+    res.status(500).json({ error: "Error al inscribir el equipo" });
+  }
+});
+
+// Obtener equipos de un torneo específico
+app.get("/api/torneos/:id/equipos", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const torneo = await Torneo.findById(id);
+
+    if (!torneo) {
+      return res.status(404).json({ error: "Torneo no encontrado" });
+    }
+
+    res.json({
+      torneo: torneo.nombre,
+      equipos: torneo.equiposInscritos,
+      cuposDisponibles: torneo.numEquipos - torneo.equiposInscritos.length,
+    });
+  } catch (err) {
+    console.error("Error al obtener equipos:", err);
+    res.status(500).json({ error: "Error al obtener equipos" });
+  }
+});
+
+// Eliminar un torneo (opcional)
+app.delete("/api/torneos/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const torneo = await Torneo.findByIdAndDelete(id);
+
+    if (!torneo) {
+      return res.status(404).json({ error: "Torneo no encontrado" });
+    }
+
+    res.json({ mensaje: "Torneo eliminado exitosamente" });
+  } catch (err) {
+    console.error("Error al eliminar torneo:", err);
+    res.status(500).json({ error: "Error al eliminar el torneo" });
+  }
+});
 // =====================================================
 // 🔹 RUTAS DE NOTIFICACIONES
 // =====================================================
