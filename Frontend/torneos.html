@@ -25,22 +25,24 @@
 <div class="container">
     <!-- Sección Inicio -->
     <div id="inicio-section" class="section">
-        <h2>¿Cómo crear tu torneo?</h2>
+        <h2> ¿Como crear tu torneo? </h2>
         <p style="color: #e5e7eb; font-size: 1.2rem; line-height: 1.8;">
-            Con este botón podrás entrar a la sección de crear torneos,
-            donde podrás llenar un formulario con los datos necesarios para crear tu torneo.
+            Con este boton podras entrar a la seccion de crear torneos,
+            donde podras llenar un formulario con los datos necesarios para crear tu torneo.
             <br><br>
             <button class="nav-style-btn" onclick="showSection('crear')">Crear Torneo</button>
             <br><br>
         </p>
-        <h2>¿Cómo inscribir un equipo a un torneo?</h2>
+        <h2>
+            ¿Como inscribir un equipo a un torneo?
+        </h2>
         <p style="color: #e5e7eb; font-size: 1.2rem; line-height: 1.8;">
-            En la sección de ver torneos, podrás ver todos los torneos disponibles.
+            En la seccion de ver torneos, podras ver todos los torneos disponibles.
             <br><br>
-            Cada torneo tendrá un botón de "Inscribir Equipo", al darle clic se abrirá un modal
-            donde podrás llenar un formulario con los datos del equipo que deseas inscribir.
+            Cada torneo tendra un boton de "Inscribir Equipo", al darle click se abrira un modal
+            donde podras llenar un formulario con los datos del equipo que deseas inscribir.
             <br><br>
-            Una vez inscrito el equipo, podrás ver el equipo en la lista de equipos inscritos del torneo.
+            Una vez inscrito el equipo, podras ver el equipo en la lista de equipos inscritos del torneo.
         </p>
     </div>
 
@@ -62,9 +64,34 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="descripcion">Descripción del Torneo</label>
-                    <textarea id="descripcion" placeholder="Describe los detalles del torneo..."></textarea>
+                    <label for="fecha-fin">Fecha de Finalización *</label>
+                    <input type="date" id="fecha-fin" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="num-equipos">Número de Equipos *</label>
+                    <select id="num-equipos" required>
+                        <option value="">Selecciona...</option>
+                        <option value="8">8 equipos</option>
+                        <option value="16">16 equipos</option>
+                        <option value="32">32 equipos</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="costo">Costo de Inscripción *</label>
+                    <input type="number" id="costo" required placeholder="Ej: 150000" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="ubicacion">Ubicación *</label>
+                    <input type="text" id="ubicacion" required placeholder="Ej: Sede Norte">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción del Torneo</label>
+                <textarea id="descripcion" placeholder="Describe los detalles del torneo..."></textarea>
             </div>
 
             <button type="submit" class="btn">Crear Torneo</button>
@@ -96,13 +123,13 @@
             </div>
 
             <div class="form-group">
-                <label for="jugadores">Jugadores (separados por comas)</label>
-                <input type="text" id="jugadores" placeholder="Ej: Luis, Kevin, Jorge">
+                <label for="nombre-capitan">Nombre del Capitán *</label>
+                <input type="text" id="nombre-capitan" required placeholder="Ej: Yeison">
             </div>
 
             <div class="form-group">
-                <label for="contacto">Teléfono de Contacto *</label>
-                <input type="tel" id="contacto" required placeholder="Ej: 3182529283">
+                <label for="telefono">Teléfono de Contacto *</label>
+                <input type="tel" id="telefono" required placeholder="Ej: 3182529283">
             </div>
 
             <div class="form-group">
@@ -115,128 +142,293 @@
     </div>
 </div>
 
+<!-- Modal de Ver Equipos -->
+<div id="equipos-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Equipos Inscritos</h2>
+            <button class="close-btn" onclick="closeEquiposModal()">&times;</button>
+        </div>
+        <div id="equipos-list" class="equipos-list"></div>
+    </div>
+</div>
+
 <script>
+    // Configuración de la API - CAMBIA ESTO POR TU URL DE RAILWAY
+    const API_URL = window.location.origin + '/api'; // Para desarrollo local
+    // const API_URL = 'https://tu-app.railway.app/api'; // Para producción en Railway
+
+    // Variables globales
     let torneoSeleccionado = null;
 
-    // Cambiar de sección
+    // Mostrar secciones
     function showSection(section) {
         document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
         document.getElementById(`${section}-section`).classList.remove('hidden');
-        if (section === 'torneos') loadTorneos();
+
+        if (section === 'torneos') {
+            cargarTorneos();
+        }
     }
 
-    // Mostrar mensajes
-    function showMessage(id, text, type) {
-        const el = document.getElementById(id);
-        el.textContent = text;
-        el.className = `message ${type}`;
-        el.style.display = "block";
-        setTimeout(() => (el.style.display = "none"), 3000);
-    }
-
-    // Crear torneo
-    document.getElementById('crear-torneo-form').addEventListener('submit', async (e) => {
+    // ========== CREAR TORNEO ==========
+    document.getElementById('crear-torneo-form').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const data = {
-            nombre: document.getElementById('nombre-torneo').value,
-            descripcion: document.getElementById('descripcion').value,
-            fechaInicio: document.getElementById('fecha-inicio').value
+        const nombreTorneo = document.getElementById('nombre-torneo').value;
+        const fechaInicio = document.getElementById('fecha-inicio').value;
+        const fechaFin = document.getElementById('fecha-fin').value;
+        const numEquipos = document.getElementById('num-equipos').value;
+        const costo = document.getElementById('costo').value;
+        const ubicacion = document.getElementById('ubicacion').value;
+        const descripcion = document.getElementById('descripcion').value;
+
+        // Validación de fechas
+        if (new Date(fechaFin) <= new Date(fechaInicio)) {
+            showMessage('crear-message', 'La fecha de finalización debe ser posterior a la fecha de inicio', 'error');
+            return;
+        }
+
+        const torneo = {
+            nombre: nombreTorneo,
+            fechaInicio,
+            fechaFin,
+            numEquipos: parseInt(numEquipos),
+            costo: parseFloat(costo),
+            ubicacion,
+            descripcion
         };
 
         try {
-            const res = await fetch('/api/torneos', {
+            const response = await fetch(`${API_URL}/torneos`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(torneo)
             });
-            if (!res.ok) throw new Error('Error al crear torneo');
-            showMessage('crear-message', 'Torneo creado exitosamente', 'success');
-            e.target.reset();
-            setTimeout(() => showSection('torneos'), 1000);
-        } catch {
-            showMessage('crear-message', 'Error al crear torneo', 'error');
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showMessage('crear-message', data.mensaje, 'success');
+                this.reset();
+
+                setTimeout(() => {
+                    showSection('torneos');
+                }, 2000);
+            } else {
+                showMessage('crear-message', data.error || 'Error al crear el torneo', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('crear-message', 'Error de conexión con el servidor', 'error');
         }
     });
 
-    // Cargar torneos desde el backend
-    async function loadTorneos() {
+    // ========== CARGAR TORNEOS ==========
+    async function cargarTorneos() {
         const grid = document.getElementById('torneos-grid');
-        grid.innerHTML = '<p style="color: #ccc;">Cargando torneos...</p>';
-        try {
-            const res = await fetch('/api/torneos');
-            const torneos = await res.json();
 
-            if (!torneos.length) {
-                grid.innerHTML = '<p style="color: #e5e7eb;">No hay torneos disponibles.</p>';
+        try {
+            const response = await fetch(`${API_URL}/torneos`);
+            const torneos = await response.json();
+
+            if (torneos.length === 0) {
+                grid.innerHTML = '<p style="color: #e5e7eb; text-align: center; grid-column: 1/-1;">No hay torneos disponibles aún. ¡Crea el primero!</p>';
                 return;
             }
 
-            grid.innerHTML = torneos.map(t => `
+            grid.innerHTML = torneos.map(torneo => `
                     <div class="torneo-card">
-                        <h3>${t.nombre}</h3>
-                        <p>${t.descripcion || 'Sin descripción'}</p>
-                        <p><strong>📅 Inicio:</strong> ${t.fechaInicio || 'Sin fecha'}</p>
-                        <p><strong>👥 Equipos inscritos:</strong> ${t.equipos.length}</p>
-                        <button class="btn" onclick="openModal('${t._id}')">Inscribir Equipo</button>
-                        ${t.equipos.length ? `
-                            <ul style="margin-top:10px; font-size:0.9rem;">
-                                ${t.equipos.map(e => `<li>${e.nombre} (${e.contacto})</li>`).join('')}
-                            </ul>
-                        ` : ''}
+                        <h3>${torneo.nombre}</h3>
+                        <div class="torneo-info">
+                            <strong>📅 Inicio:</strong> ${formatDate(torneo.fechaInicio)}
+                        </div>
+                        <div class="torneo-info">
+                            <strong>🏁 Fin:</strong> ${formatDate(torneo.fechaFin)}
+                        </div>
+                        <div class="torneo-info">
+                            <strong>👥 Equipos:</strong> ${torneo.equiposInscritos.length}/${torneo.numEquipos}
+                        </div>
+                        <div class="torneo-info">
+                            <strong>📍 Ubicación:</strong> ${torneo.ubicacion}
+                        </div>
+                        ${torneo.descripcion ? `<div class="torneo-info" style="margin-top: 1rem;">${torneo.descripcion}</div>` : ''}
+                        <div class="price-tag">$${formatPrice(torneo.costo)}</div>
+
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn inscribirse-btn" onclick="openModal('${torneo._id}')"
+                                style="flex: 1; ${torneo.equiposInscritos.length >= torneo.numEquipos ? 'opacity: 0.5; cursor: not-allowed;' : ''}"
+                                ${torneo.equiposInscritos.length >= torneo.numEquipos ? 'disabled' : ''}>
+                                ${torneo.equiposInscritos.length >= torneo.numEquipos ? 'Cupos Llenos' : 'Inscribir Equipo'}
+                            </button>
+
+                            ${torneo.equiposInscritos.length > 0 ? `
+                                <button class="btn" onclick="verEquipos('${torneo._id}')"
+                                    style="flex: 1; background: #059669;">
+                                    Ver Equipos (${torneo.equiposInscritos.length})
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 `).join('');
-        } catch {
-            grid.innerHTML = '<p style="color: red;">Error al cargar torneos</p>';
+        } catch (error) {
+            console.error('Error al cargar torneos:', error);
+            grid.innerHTML = '<p style="color: #ef4444; text-align: center; grid-column: 1/-1;">Error al cargar los torneos. Por favor, recarga la página.</p>';
         }
     }
 
-    // Abrir modal
-    function openModal(id) {
-        torneoSeleccionado = id;
-        document.getElementById('inscripcion-modal').style.display = 'flex';
-        document.getElementById('inscripcion-form').reset();
+    // ========== MODAL DE INSCRIPCIÓN ==========
+    async function openModal(torneoId) {
+        try {
+            const response = await fetch(`${API_URL}/torneos/${torneoId}`);
+            torneoSeleccionado = await response.json();
+
+            document.getElementById('inscripcion-modal').style.display = 'flex';
+            document.getElementById('inscripcion-form').reset();
+            document.getElementById('modal-message').style.display = 'none';
+        } catch (error) {
+            console.error('Error al cargar torneo:', error);
+            alert('Error al cargar el torneo');
+        }
     }
 
-    // Cerrar modal
     function closeModal() {
         document.getElementById('inscripcion-modal').style.display = 'none';
+        torneoSeleccionado = null;
     }
 
-    // Enviar inscripción
-    document.getElementById('inscripcion-form').addEventListener('submit', async (e) => {
+    // ========== INSCRIBIR EQUIPO ==========
+    document.getElementById('inscripcion-form').addEventListener('submit', async function(e) {
         e.preventDefault();
+
         if (!torneoSeleccionado) return;
 
-        const data = {
+        const equipo = {
             nombre: document.getElementById('nombre-equipo').value,
-            jugadores: document.getElementById('jugadores').value.split(',').map(j => j.trim()).filter(Boolean),
-            contacto: document.getElementById('contacto').value,
+            capitan: document.getElementById('nombre-capitan').value,
+            telefono: document.getElementById('telefono').value,
             email: document.getElementById('email').value
         };
 
         try {
-            const res = await fetch(`/api/torneos/${torneoSeleccionado}/equipos`, {
+            const response = await fetch(`${API_URL}/torneos/${torneoSeleccionado._id}/equipos`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(equipo)
             });
-            if (!res.ok) new Error();
-            showMessage('modal-message', 'Equipo inscrito exitosamente', 'success');
-            setTimeout(() => {
-                closeModal();
-                loadTorneos();
-            }, 1000);
-        } catch {
-            showMessage('modal-message', 'Error al inscribir equipo', 'error');
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showMessage('modal-message', data.mensaje, 'success');
+
+                setTimeout(() => {
+                    closeModal();
+                    cargarTorneos();
+                    showMessage('torneos-message', `El equipo "${equipo.nombre}" ha sido inscrito en el torneo "${torneoSeleccionado.nombre}"`, 'success');
+                }, 2000);
+            } else {
+                showMessage('modal-message', data.error || 'Error al inscribir el equipo', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('modal-message', 'Error de conexión con el servidor', 'error');
         }
     });
 
-    // Cerrar modal al hacer clic fuera
-    window.onclick = function(e) {
-        const modal = document.getElementById('inscripcion-modal');
-        if (e.target === modal) closeModal();
-    };
+    // ========== VER EQUIPOS ==========
+    async function verEquipos(torneoId) {
+        try {
+            const response = await fetch(`${API_URL}/torneos/${torneoId}/equipos`);
+            const data = await response.json();
+
+            const equiposList = document.getElementById('equipos-list');
+
+            if (data.equipos.length === 0) {
+                equiposList.innerHTML = '<p style="color: #e5e7eb; text-align: center;">No hay equipos inscritos aún.</p>';
+            } else {
+                equiposList.innerHTML = `
+                        <div style="margin-bottom: 1rem; padding: 1rem; background: #1f2937; border-radius: 8px;">
+                            <h3 style="color: #10b981; margin: 0;">${data.torneo}</h3>
+                            <p style="color: #9ca3af; margin: 0.5rem 0 0 0;">
+                                Cupos disponibles: ${data.cuposDisponibles}
+                            </p>
+                        </div>
+                        ${data.equipos.map((equipo, index) => `
+                            <div style="padding: 1rem; background: #374151; border-radius: 8px; margin-bottom: 1rem;">
+                                <h4 style="color: #10b981; margin: 0 0 0.5rem 0;">
+                                    ${index + 1}. ${equipo.nombre}
+                                </h4>
+                                <p style="color: #e5e7eb; margin: 0.25rem 0;">
+                                    <strong>Capitán:</strong> ${equipo.capitan}
+                                </p>
+                                <p style="color: #e5e7eb; margin: 0.25rem 0;">
+                                    <strong>Teléfono:</strong> ${equipo.telefono}
+                                </p>
+                                <p style="color: #e5e7eb; margin: 0.25rem 0;">
+                                    <strong>Email:</strong> ${equipo.email}
+                                </p>
+                                <p style="color: #9ca3af; margin: 0.5rem 0 0 0; font-size: 0.875rem;">
+                                    Inscrito: ${formatDate(equipo.fechaInscripcion)}
+                                </p>
+                            </div>
+                        `).join('')}
+                    `;
+            }
+
+            document.getElementById('equipos-modal').style.display = 'flex';
+        } catch (error) {
+            console.error('Error al cargar equipos:', error);
+            alert('Error al cargar los equipos');
+        }
+    }
+
+    function closeEquiposModal() {
+        document.getElementById('equipos-modal').style.display = 'none';
+    }
+
+    // ========== UTILIDADES ==========
+    function showMessage(elementId, text, type) {
+        const messageEl = document.getElementById(elementId);
+        messageEl.textContent = text;
+        messageEl.className = `message ${type}`;
+        messageEl.style.display = 'block';
+
+        setTimeout(() => {
+            messageEl.style.display = 'none';
+        }, 5000);
+    }
+
+    function formatDate(dateString) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('es-ES', options);
+    }
+
+    function formatPrice(price) {
+        return price.toLocaleString('es-CO');
+    }
+
+    // Cerrar modales al hacer clic fuera
+    window.onclick = function(event) {
+        const inscripcionModal = document.getElementById('inscripcion-modal');
+        const equiposModal = document.getElementById('equipos-modal');
+
+        if (event.target === inscripcionModal) {
+            closeModal();
+        }
+        if (event.target === equiposModal) {
+            closeEquiposModal();
+        }
+    }
+
+    // Cargar torneos al iniciar
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log('✅ Aplicación cargada - API URL:', API_URL);
+    });
 </script>
 </body>
 </html>
