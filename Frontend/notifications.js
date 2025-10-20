@@ -45,7 +45,7 @@ const NotificationManager = {
         panel.className = "notification-panel";
         panel.innerHTML = `
             <div class="notification-header">
-                <h3>🔔 Notificaciones</h3>
+                <h3>Notificaciones</h3>
                 <div class="notification-actions">
                     <button id="markAllReadBtn" class="btn-icon" title="Marcar todas como leídas">
                         ✓
