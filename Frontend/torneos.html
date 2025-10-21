@@ -160,6 +160,24 @@
 
     // Variables globales
     let torneoSeleccionado = null;
+    let currentUserId = null;
+    let currentUserName = null;
+
+    // Obtener datos del usuario al cargar
+    function initUserData() {
+        const token = localStorage.getItem("token");
+        if (token) {
+            try {
+                // Decodificar el token JWT (solo la parte del payload)
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                currentUserId = payload.id;
+                currentUserName = localStorage.getItem("userName") || payload.name;
+                console.log("👤 Usuario identificado:", currentUserName, "ID:", currentUserId);
+            } catch (e) {
+                console.error("Error al decodificar token:", e);
+            }
+        }
+    }
 
     // Mostrar secciones
     function showSection(section) {
