@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CanchaYa-Torneos</title>
     <link rel="stylesheet" href="diseñoTorneo.css">
+    <link rel="icon" type="image/x-icon" href="img/favicon_io/favicon.ico">
+
+    <!-- Favicon PNG para navegadores modernos -->
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon_io/favicon-32x32.png">
+
+    <!-- Para Android -->
+    <link rel="icon" type="image/png" sizes="192x192" href="img/favicon_io/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="img/favicon_io/android-chrome-512x512.png">
+
+    <!-- Para Apple devices -->
+    <link rel="apple-touch-icon" sizes="180x180" href="img/favicon_io/favicon_io/apple-touch-icon.png">
+
+    <!-- Manifest para PWA -->
+    <link rel="manifest" href="img/favicon_io/site.webmanifest">
+
 </head>
 <body>
 <header>
@@ -62,12 +77,24 @@
                     <label for="fecha-inicio">Fecha de Inicio *</label>
                     <input type="date" id="fecha-inicio" required>
                 </div>
+                <script>
+                    // Obtener la fecha actual en formato YYYY-MM-DD
+                    const hoy = new Date().toISOString().split("T")[0];
 
+                    // Establecer la fecha mínima en el input
+                    document.getElementById("fecha").setAttribute("min", hoy);
+                </script>
                 <div class="form-group">
                     <label for="fecha-fin">Fecha de Finalización *</label>
                     <input type="date" id="fecha-fin" required>
                 </div>
+                <script>
+                    // Obtener la fecha actual en formato YYYY-MM-DD
+                    const hoy = new Date().toISOString().split("T")[0];
 
+                    // Establecer la fecha mínima en el input
+                    document.getElementById("fecha").setAttribute("min", hoy);
+                </script>
                 <div class="form-group">
                     <label for="num-equipos">Número de Equipos *</label>
                     <select id="num-equipos" required>
