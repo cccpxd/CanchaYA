@@ -277,6 +277,8 @@ const torneoSchema = new mongoose.Schema({
   costo: { type: Number, required: true },
   ubicacion: { type: String, required: true },
   descripcion: { type: String, default: "" },
+  creadorId: { type: String, required: true }, // ID del usuario que creó el torneo
+  creadorNombre: { type: String, required: true }, // Nombre del creador
   equiposInscritos: [
     {
       nombre: { type: String, required: true },
@@ -293,8 +295,8 @@ const Torneo = mongoose.model("Torneo", torneoSchema);
 
 // ========== RUTAS API ==========
 
-// Crear torneo
-app.post("/api/torneos", async (req, res) => {
+// Crear torneo (requiere autenticación)
+app.post("/api/torneos", authMiddleware, async (req, res) => {
   try {
     const {
       nombre,
@@ -321,6 +323,8 @@ app.post("/api/torneos", async (req, res) => {
       costo,
       ubicacion,
       descripcion,
+      creadorId: req.user.id,
+      creadorNombre: req.user.name,
       equiposInscritos: [],
     });
 
@@ -434,60 +438,83 @@ app.get("/api/torneos/:id/equipos", async (req, res) => {
   }
 });
 
-// Eliminar un torneo (opcional)
-app.delete("/api/torneos/:id", async (req, res) => {
+// Eliminar un torneo (solo el creador)
+app.delete("/api/torneos/:id", authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const torneo = await Torneo.findByIdAndDelete(id);
+    const torneo = await Torneo.findById(id);
 
     if (!torneo) {
       return res.status(404).json({ error: "Torneo no encontrado" });
     }
 
+    // Verificar que el usuario sea el creador
+    if (torneo.creadorId !== req.user.id) {
+      return res.status(403).json({
+        error: "No tienes permiso para eliminar este torneo. Solo el creador puede hacerlo."
+      });
+    }
+
+    await Torneo.findByIdAndDelete(id);
     res.json({ mensaje: "Torneo eliminado exitosamente" });
   } catch (err) {
     console.error("Error al eliminar torneo:", err);
     res.status(500).json({ error: "Error al eliminar el torneo" });
   }
 });
-// =====================================================
-// 🔹 RUTAS DE NOTIFICACIONES
-// =====================================================
-app.get("/notificaciones", authMiddleware, async (req, res) => {
-  try {
-    const notificaciones = await Notification.find({ userId: req.user.id })
-      .sort({ createdAt: -1 })
-      .lean();
-    res.json(notificaciones);
-  } catch (err) {
-    res.status(500).json({ error: "Error al obtener notificaciones" });
-  }
-});
 
-app.patch("/notificaciones/:id/leer", authMiddleware, async (req, res) => {
+// Actualizar un torneo (solo el creador)
+app.put("/api/torneos/:id", authMiddleware, async (req, res) => {
   try {
-    const notificacion = await Notification.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
-      { leida: true },
-      { new: true }
-    );
-    if (!notificacion) return res.status(404).json({ error: "Notificación no encontrada" });
-    res.json({ mensaje: "Notificación marcada como leída", notificacion });
-  } catch (err) {
-    res.status(500).json({ error: "Error al actualizar notificación" });
-  }
-});
+    const { id } = req.params;
+    const {
+      nombre,
+      fechaInicio,
+      fechaFin,
+      numEquipos,
+      costo,
+      ubicacion,
+      descripcion,
+    } = req.body;
 
-app.delete("/notificaciones/:id", authMiddleware, async (req, res) => {
-  try {
-    const notificacion = await Notification.findOneAndDelete({
-      _id: req.params.id,
-      userId: req.user.id
+    const torneo = await Torneo.findById(id);
+
+    if (!torneo) {
+      return res.status(404).json({ error: "Torneo no encontrado" });
+    }
+
+    // Verificar que el usuario sea el creador
+    if (torneo.creadorId !== req.user.id) {
+      return res.status(403).json({
+        error: "No tienes permiso para editar este torneo. Solo el creador puede hacerlo."
+      });
+    }
+
+    // Validación de fechas
+    if (fechaFin && fechaInicio && new Date(fechaFin) <= new Date(fechaInicio)) {
+      return res.status(400).json({
+        error: "La fecha de finalización debe ser posterior a la fecha de inicio",
+      });
+    }
+
+    // Actualizar campos
+    if (nombre) torneo.nombre = nombre;
+    if (fechaInicio) torneo.fechaInicio = fechaInicio;
+    if (fechaFin) torneo.fechaFin = fechaFin;
+    if (numEquipos) torneo.numEquipos = numEquipos;
+    if (costo !== undefined) torneo.costo = costo;
+    if (ubicacion) torneo.ubicacion = ubicacion;
+    if (descripcion !== undefined) torneo.descripcion = descripcion;
+
+    await torneo.save();
+
+    res.json({
+      mensaje: "Torneo actualizado exitosamente",
+      torneo,
     });
-    if (!notificacion) return res.status(404).json({ error: "Notificación no encontrada" });
-    res.json({ mensaje: "Notificación eliminada" });
   } catch (err) {
-    res.status(500).json({ error: "Error al eliminar notificación" });
+    console.error("Error al actualizar torneo:", err);
+    res.status(500).json({ error: "Error al actualizar el torneo" });
   }
 });
 
