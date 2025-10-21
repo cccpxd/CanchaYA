@@ -866,3 +866,23 @@ footer {
     display: flex;
     align-items: center;
 }
+
+
+/* Botón de pago simulado */
+.btn-pago {
+  background-color: orange;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-pago[disabled] { opacity: 0.6; cursor: default; }
+
+
+.mensaje-pago {
+  font-weight: 600;
+  margin-top: 10px;
+  text-align: center;
+  transition: color 0.3s ease;
+}

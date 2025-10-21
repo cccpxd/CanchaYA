@@ -45,6 +45,7 @@ const reservaSchema = new mongoose.Schema({
   cancha: String,
   fecha: String,
   hora: String,
+  estado_pago: { type: String, default: 'pendiente' },
   userId: { type: String, required: true }
 }, { timestamps: true });
 
@@ -187,7 +188,7 @@ app.post("/login", async (req, res) => {
 // Crear reserva + notificación
 app.post("/reservas", authMiddleware, async (req, res) => {
   try {
-    const { nombre, email, telefono, cancha, fecha, hora } = req.body;
+    const { nombre, email, telefono, cancha, fecha, hora, estado_pago } = req.body;
 
     if (!nombre || !email || !cancha || !fecha || !hora) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
@@ -205,6 +206,7 @@ app.post("/reservas", authMiddleware, async (req, res) => {
       cancha,
       fecha,
       hora,
+      estado_pago: estado_pago || 'pendiente',
       userId: req.user.id
     });
     await reserva.save();
