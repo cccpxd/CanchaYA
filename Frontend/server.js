@@ -556,6 +556,6 @@ app.post("/api/enviar-correo", async (req, res) => {
 // 🔹 SERVIDOR
 // =====================================================
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`📁 Sirviendo archivos desde: ${__dirname}`);
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`📁 Sirviendo archivos desde: ${__dirname}`);
 });
