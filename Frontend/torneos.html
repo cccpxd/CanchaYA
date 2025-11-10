@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanchaYa-Torneos</title>
+    <link rel="stylesheet" href="diseñoTorneo.css">
+    <link rel="icon" type="image/x-icon" href="img/favicon_io/favicon.ico">
+
+    <!-- Favicon PNG para navegadores modernos -->
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon_io/favicon-32x32.png">
+
+    <!-- Para Android -->
+    <link rel="icon" type="image/png" sizes="192x192" href="img/favicon_io/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="img/favicon_io/android-chrome-512x512.png">
+
+    <!-- Para Apple devices -->
+    <link rel="apple-touch-icon" sizes="180x180" href="img/favicon_io/favicon_io/apple-touch-icon.png">
+
+    <!-- Manifest para PWA -->
+    <link rel="manifest" href="img/favicon_io/site.webmanifest">
+
+</head>
+<body>
+<header>
+    <nav>
+        <div class="logo">⚽ Torneos</div>
+        <ul class="nav-links">
+            <li><a onclick="showSection('inicio')">Inicio</a></li>
+            <li><a onclick="showSection('torneos')">Ver Torneos</a></li>
+            <li><a href="index.html" class="login-btn">Pagina Principal</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="hero">
+    <h1>TORNEOS - CANCHAYA</h1>
+    <p>Aquí encontrarás las reglas e instrucciones para hacer tu torneo </p>
+</div>
+
+<div class="container">
+    <!-- Sección Inicio -->
+    <div id="inicio-section" class="section">
+        <h2> ¿Como crear tu torneo? </h2>
+        <p style="color: #e5e7eb; font-size: 1.2rem; line-height: 1.8;">
+            Con este boton podras entrar a la seccion de crear torneos,
+            donde podras llenar un formulario con los datos necesarios para crear tu torneo.
+            <br><br>
+            <button class="nav-style-btn" onclick="showSection('crear')">Crear Torneo</button>
+            <br><br>
+        </p>
+        <h2>
+            ¿Como inscribir un equipo a un torneo?
+        </h2>
+        <p style="color: #e5e7eb; font-size: 1.2rem; line-height: 1.8;">
+            En la seccion de ver torneos, podras ver todos los torneos disponibles.
+            <br><br>
+            Cada torneo tendra un boton de "Inscribir Equipo", al darle click se abrira un modal
+            donde podras llenar un formulario con los datos del equipo que deseas inscribir.
+            <br><br>
+            Una vez inscrito el equipo, podras ver el equipo en la lista de equipos inscritos del torneo.
+        </p>
+    </div>
+
+    <!-- Sección Crear Torneo -->
+    <div id="crear-section" class="section hidden">
+        <h2>Crear Nuevo Torneo</h2>
+        <div id="crear-message" class="message"></div>
+
+        <form id="crear-torneo-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nombre-torneo">Nombre del Torneo *</label>
+                    <input type="text" id="nombre-torneo" required placeholder="Ej: Copa Patiño 2025">
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha-inicio">Fecha de Inicio *</label>
+                    <input type="date" id="fecha-inicio" required>
+                </div>
+                <script>
+                    // Obtener la fecha actual en formato YYYY-MM-DD
+                    const hoy = new Date().toISOString().split("T")[0];
+
+                    // Establecer la fecha mínima en el input
+                    document.getElementById("fecha").setAttribute("min", hoy);
+                </script>
+                <div class="form-group">
+                    <label for="fecha-fin">Fecha de Finalización *</label>
+                    <input type="date" id="fecha-fin" required>
+                </div>
+                <script>
+                    // Obtener la fecha actual en formato YYYY-MM-DD
+                    const hoy = new Date().toISOString().split("T")[0];
+
+                    // Establecer la fecha mínima en el input
+                    document.getElementById("fecha").setAttribute("min", hoy);
+                </script>
+                <div class="form-group">
+                    <label for="num-equipos">Número de Equipos *</label>
+                    <select id="num-equipos" required>
+                        <option value="">Selecciona...</option>
+                        <option value="8">8 equipos</option>
+                        <option value="16">16 equipos</option>
+                        <option value="32">32 equipos</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="costo">Costo de Inscripción *</label>
+                    <input type="number" id="costo" required placeholder="Ej: 150000" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="ubicacion">Ubicación *</label>
+                    <input type="text" id="ubicacion" required placeholder="Ej: Sede Norte">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción del Torneo</label>
+                <textarea id="descripcion" placeholder="Describe los detalles del torneo..."></textarea>
+            </div>
+
+            <button type="submit" class="btn">Crear Torneo</button>
+        </form>
+    </div>
+
+    <!-- Sección Ver Torneos -->
+    <div id="torneos-section" class="section hidden">
+        <h2>Torneos Disponibles</h2>
+        <div id="torneos-message" class="message"></div>
+        <div id="torneos-grid" class="torneos-grid"></div>
+    </div>
+</div>
+
+<!-- Modal de Inscripción -->
+<div id="inscripcion-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Inscribir Equipo</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+
+        <div id="modal-message" class="message"></div>
+
+        <form id="inscripcion-form">
+            <div class="form-group">
+                <label for="nombre-equipo">Nombre del Equipo *</label>
+                <input type="text" id="nombre-equipo" required placeholder="Ej: Chatarritas FC">
+            </div>
+
+            <div class="form-group">
+                <label for="nombre-capitan">Nombre del Capitán *</label>
+                <input type="text" id="nombre-capitan" required placeholder="Ej: Yeison">
+            </div>
+
+            <div class="form-group">
+                <label for="telefono">Teléfono de Contacto *</label>
+                <input type="tel" id="telefono" required placeholder="Ej: 3182529283">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" required placeholder="Ej: equipo@ejemplo.com">
+            </div>
+
+            <button type="submit" class="btn">Confirmar Inscripción</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Ver Equipos -->
+<div id="equipos-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Equipos Inscritos</h2>
+            <button class="close-btn" onclick="closeEquiposModal()">&times;</button>
+        </div>
+        <div id="equipos-list" class="equipos-list"></div>
+    </div>
+</div>
+<script src="torneos.js"></script>
+</body>
+</html>

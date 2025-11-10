@@ -1,79 +1,44 @@
-// reservas.js
 document.addEventListener("DOMContentLoaded", () => {
-    const bookingForm = document.getElementById("bookingForm");
-    const reservasList = document.getElementById("reservasList");
-    const user = JSON.parse(localStorage.getItem("currentUser"));
+  const bookingForm = document.getElementById("bookingForm");
+  if (!bookingForm) return;
 
-    if (!bookingForm || !user) return;
+  bookingForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    cargarReservas();
-    fetch("/api/reservas/expired", { method: "DELETE" });
+    const mensajePago = document.getElementById("mensajePago");
+    const formData = new FormData(e.target);
+    const datos = Object.fromEntries(formData.entries());
 
-    bookingForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    mensajePago.textContent = "Procesando pago...";
+    mensajePago.style.color = "orange";
 
-        const reserva = {
-            nombre: document.getElementById("nombreReserva").value,
-            email: document.getElementById("emailReserva").value,
-            telefono: document.getElementById("telefonoReserva").value,
-            cancha: document.getElementById("cancha").value,
-            fecha: document.getElementById("fecha").value,
-            hora: document.getElementById("hora").value,
-        };
+    await new Promise((res) => setTimeout(res, 2000));
 
-        const resp = await fetch("/api/reservas", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(reserva),
-        });
+    mensajePago.textContent = "Pago exitoso. Confirmando reserva...";
+    mensajePago.style.color = "green";
 
-        if (resp.ok) {
-            alert("✅ Reserva creada correctamente");
-            bookingForm.reset();
-            cargarReservas();
-        } else {
-            alert("❌ Error al crear la reserva");
-        }
-    });
+    datos.estado_pago = "pagado";
 
-    async function cargarReservas() {
-        const email = user.email;
-        const resp = await fetch(`/api/reservas?email=${encodeURIComponent(email)}`);
-        const reservas = await resp.json();
+    try {
+      const respuesta = await fetch("/reservas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      });
 
-        reservasList.innerHTML = "";
+      const resultado = await respuesta.json();
 
-        if (reservas.length === 0) {
-            reservasList.innerHTML = "<p>No hay reservas aún. ¡Haz tu primera reserva!</p>";
-            return;
-        }
-
-        reservas.forEach((r) => {
-            const item = document.createElement("div");
-            item.classList.add("reservation-item");
-            item.innerHTML = `
-                <h4>${r.cancha} - ${r.fecha} ${r.hora}</h4>
-                <p><strong>Nombre:</strong> ${r.nombre}</p>
-                <p><strong>Email:</strong> ${r.email}</p>
-                <p><strong>Teléfono:</strong> ${r.telefono}</p>
-                <button class="btn" data-id="${r.id}">Cancelar reserva</button>
-            `;
-            reservasList.appendChild(item);
-        });
-
-        document.querySelectorAll(".btn[data-id]").forEach(btn => {
-            btn.addEventListener("click", async () => {
-                const id = btn.getAttribute("data-id");
-                if (confirm("¿Deseas cancelar esta reserva?")) {
-                    const resp = await fetch(`/api/reservas/${id}`, { method: "DELETE" });
-                    if (resp.ok) {
-                        alert("🗑️ Reserva cancelada");
-                        cargarReservas();
-                    } else {
-                        alert("❌ Error al cancelar la reserva");
-                    }
-                }
-            });
-        });
+      if (respuesta.ok) {
+        mensajePago.textContent = "Reserva confirmada correctamente.";
+        e.target.reset();
+      } else {
+        mensajePago.textContent =
+          resultado.error || "Error al registrar la reserva.";
+        mensajePago.style.color = "red";
+      }
+    } catch (error) {
+      mensajePago.textContent = "Error de conexión con el servidor.";
+      mensajePago.style.color = "red";
     }
+  });
 });
